@@ -1,0 +1,50 @@
+[
+  {
+    "id": "crop_001",
+    "name": "Wheat",
+    "nameHi": "गेहूं",
+    "image": "assets/farmer_1.png",
+    "area": "2.0",
+    "areaUnit": "Acre",
+    "sowingDate": "2024-11-15",
+    "expectedHarvest": "2025-04-15",
+    "health": "Good",
+    "healthColor": "#4CAF50",
+    "stage": "Vegetative",
+    "stageProgress": 45,
+    "nextActivity": "Fertilizer application",
+    "nextActivityDate": "2024-12-20"
+  },
+  {
+    "id": "crop_002",
+    "name": "Rice",
+    "nameHi": "धान",
+    "image": "assets/farmer_1.png",
+    "area": "1.5",
+    "areaUnit": "Acre",
+    "sowingDate": "2024-06-20",
+    "expectedHarvest": "2024-11-15",
+    "health": "Excellent",
+    "healthColor": "#2E7D32",
+    "stage": "Harvest Ready",
+    "stageProgress": 95,
+    "nextActivity": "Harvest preparation",
+    "nextActivityDate": "2024-11-10"
+  },
+  {
+    "id": "crop_003",
+    "name": "Sugarcane",
+    "nameHi": "गन्ना",
+    "image": "assets/farmer_1.png",
+    "area": "1.5",
+    "areaUnit": "Acre",
+    "sowingDate": "2024-02-10",
+    "expectedHarvest": "2025-02-10",
+    "health": "Fair",
+    "healthColor": "#FF9800",
+    "stage": "Grand Growth",
+    "stageProgress": 65,
+    "nextActivity": "Pest control",
+    "nextActivityDate": "2024-12-15"
+  }
+]

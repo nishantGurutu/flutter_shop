@@ -1,0 +1,74 @@
+[
+  {
+    "id": "tools",
+    "title": "Tools",
+    "titleHi": "औजार",
+    "icon": "build",
+    "color": "#4CAF50",
+    "bgColor": "#E8F5E9"
+  },
+  {
+    "id": "seeds",
+    "title": "Seeds",
+    "titleHi": "बीज",
+    "icon": "grass",
+    "color": "#8BC34A",
+    "bgColor": "#F1F8E9"
+  },
+  {
+    "id": "pesticides",
+    "title": "Pesticides",
+    "titleHi": "कीटनाशक",
+    "icon": "bug_report",
+    "color": "#FF9800",
+    "bgColor": "#FFF3E0"
+  },
+  {
+    "id": "crop_protection",
+    "title": "Crop Protection",
+    "titleHi": "फसल सुरक्षा",
+    "icon": "shield",
+    "color": "#4CAF50",
+    "bgColor": "#E8F5E9"
+  },
+  {
+    "id": "organic",
+    "title": "Organic",
+    "titleHi": "जैविक",
+    "icon": "eco",
+    "color": "#FF5722",
+    "bgColor": "#FBE9E7"
+  },
+  {
+    "id": "equipment",
+    "title": "Equipment",
+    "titleHi": "उपकरण",
+    "icon": "agriculture",
+    "color": "#795548",
+    "bgColor": "#EFEBE9"
+  },
+  {
+    "id": "cattle",
+    "title": "Cattle Feed",
+    "titleHi": "पशु फीड",
+    "icon": "pets",
+    "color": "#FFC107",
+    "bgColor": "#FFF8E1"
+  },
+  {
+    "id": "dairy",
+    "title": "Dairy",
+    "titleHi": "डेयरी",
+    "icon": "opacity",
+    "color": "#795548",
+    "bgColor": "#EFEBE9"
+  },
+  {
+    "id": "others",
+    "title": "Others",
+    "titleHi": "अन्य",
+    "icon": "more_horiz",
+    "color": "#9E9E9E",
+    "bgColor": "#F5F5F5"
+  }
+]

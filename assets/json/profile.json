@@ -1,0 +1,70 @@
+{
+  "user": {
+    "id": "user_001",
+    "name": "Ramesh Kumar",
+    "nameHi": "राम किसान",
+    "phone": "+91 98765 43210",
+    "email": "ramesh.kumar@email.com",
+    "avatar": "assets/farmer.png",
+    "location": {
+      "village": "Rampur Kalan",
+      "district": "Shahjahanpur",
+      "state": "Uttar Pradesh",
+      "pincode": "242001"
+    },
+    "landSize": "5.0",
+    "landUnit": "Acre",
+    "memberSince": "2023-01-15",
+    "language": "hi"
+  },
+  "menuItems": [
+    {
+      "id": "orders",
+      "title": "My Orders",
+      "titleHi": "मेरे ऑर्डर",
+      "icon": "receipt_long",
+      "route": "/orders"
+    },
+    {
+      "id": "info",
+      "title": "My Information",
+      "titleHi": "मेरी जानकारी",
+      "icon": "person_outline",
+      "route": "/profile/info"
+    },
+    {
+      "id": "address",
+      "title": "My Addresses",
+      "titleHi": "मेरे पते",
+      "icon": "location_on_outlined",
+      "route": "/profile/addresses"
+    },
+    {
+      "id": "payment",
+      "title": "Payment Methods",
+      "titleHi": "भुगतान के तरीके",
+      "icon": "credit_card",
+      "route": "/profile/payment"
+    },
+    {
+      "id": "help",
+      "title": "Help & Support",
+      "titleHi": "सहायता और सपोर्ट",
+      "icon": "help_outline",
+      "route": "/support"
+    },
+    {
+      "id": "about",
+      "title": "About Us",
+      "titleHi": "हमारे बारे में",
+      "icon": "info_outline",
+      "route": "/about"
+    }
+  ],
+  "stats": {
+    "totalOrders": 24,
+    "totalSpent": 15800,
+    "cropsManaged": 3,
+    "advisorySessions": 12
+  }
+}

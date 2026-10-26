@@ -1,0 +1,11 @@
+export 'package:get_it/get_it.dart';
+export 'package:shop/core/base_classes.dart';
+export 'package:shop/core/error_handler.dart';
+export 'package:shop/core/network_service.dart';
+export 'package:shop/repository/home_api/home_repository.dart';
+export 'package:shop/repository/chat_api/chat_repository.dart';
+export 'package:shop/repository/auth_api/auth_repository.dart';
+export 'package:shop/repository/message_api/message_repository.dart';
+export 'package:shop/repository/notification_api/notification_repository.dart';
+export 'package:shop/repository/home_api/user_repository.dart';
+export 'package:shop/repository/premium_api/premium_repository.dart';

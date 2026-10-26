@@ -1,0 +1,35 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Flutter: Run (Debug)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "flutterMode": "debug",
+            "deviceId": ""
+        },
+        {
+            "name": "Flutter: Run (Profile)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "flutterMode": "profile",
+            "deviceId": ""
+        },
+        {
+            "name": "Flutter: Run (Release)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "flutterMode": "release",
+            "deviceId": ""
+        },
+        {
+            "name": "Flutter: Attach",
+            "request": "attach",
+            "type": "dart",
+            "deviceId": ""
+        }
+    ]
+}

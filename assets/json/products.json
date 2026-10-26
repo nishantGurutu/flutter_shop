@@ -1,0 +1,122 @@
+[
+  {
+    "id": "urea_001",
+    "name": "Urea (46% N)",
+    "subtitle": "Nitrogen Fertilizer",
+    "price": 266,
+    "unit": "45 kg",
+    "rating": 4.5,
+    "reviewCount": 230,
+    "image": "assets/uriya.png",
+    "description": "Urea is a high-quality nitrogen fertilizer that helps in crop growth and yield improvement. It provides essential nitrogen for plant development.",
+    "benefits": [
+      "Improves crop growth",
+      "Helps increase yield",
+      "High-quality nitrogen source",
+      "Essential for leaf development"
+    ],
+    "category": "Fertilizer",
+    "inStock": true,
+    "discount": 0
+  },
+  {
+    "id": "dap_001",
+    "name": "DAP (18:46:0)",
+    "subtitle": "Di-Ammonium Phosphate",
+    "price": 1350,
+    "unit": "50 kg",
+    "rating": 4.6,
+    "reviewCount": 180,
+    "image": "assets/dap_image.png",
+    "description": "DAP is a high-quality fertilizer that helps in crop growth and yield improvement. It provides both nitrogen and phosphorus.",
+    "benefits": [
+      "Improves root development",
+      "Helps increase yield",
+      "High-quality phosphate source",
+      "Essential for flowering"
+    ],
+    "category": "Fertilizer",
+    "inStock": true,
+    "discount": 5
+  },
+  {
+    "id": "potash_001",
+    "name": "Potash (MOP)",
+    "subtitle": "Muriate of Potash",
+    "price": 720,
+    "unit": "50 kg",
+    "rating": 4.3,
+    "reviewCount": 120,
+    "image": "assets/uriya.png",
+    "description": "Potash is essential for fruit and flower development. It improves the overall quality of crops.",
+    "benefits": [
+      "Improves fruit quality",
+      "Enhances disease resistance",
+      "Essential for water retention",
+      "Strengthens plant stems"
+    ],
+    "category": "Fertilizer",
+    "inStock": true,
+    "discount": 0
+  },
+  {
+    "id": "npk_001",
+    "name": "NPK (19:19:19)",
+    "subtitle": "Complete Fertilizer",
+    "price": 1450,
+    "unit": "50 kg",
+    "rating": 4.4,
+    "reviewCount": 95,
+    "image": "assets/dap_image.png",
+    "description": "NPK provides balanced nutrition with Nitrogen, Phosphorus, and Potassium in equal proportions.",
+    "benefits": [
+      "Balanced nutrition",
+      "All-round development",
+      "Suitable for all crops",
+      "Easy to apply"
+    ],
+    "category": "Fertilizer",
+    "inStock": true,
+    "discount": 10
+  },
+  {
+    "id": "pesticide_001",
+    "name": "Insecticide Pro",
+    "subtitle": "Broad Spectrum",
+    "price": 450,
+    "unit": "500 ml",
+    "rating": 4.2,
+    "reviewCount": 85,
+    "image": "assets/uriya.png",
+    "description": "Effective insecticide for controlling various pests in crops.",
+    "benefits": [
+      "Controls multiple pests",
+      "Fast action",
+      "Safe for crops",
+      "Long-lasting effect"
+    ],
+    "category": "Pesticide",
+    "inStock": true,
+    "discount": 15
+  },
+  {
+    "id": "fungicide_001",
+    "name": "Fungicide Guard",
+    "subtitle": "Fungal Control",
+    "price": 380,
+    "unit": "250 gm",
+    "rating": 4.1,
+    "reviewCount": 67,
+    "image": "assets/dap_image.png",
+    "description": "Effective fungicide for controlling fungal diseases in crops.",
+    "benefits": [
+      "Prevents fungal diseases",
+      "Systemic action",
+      "Rainfast protection",
+      "Improves crop health"
+    ],
+    "category": "Pesticide",
+    "inStock": true,
+    "discount": 0
+  }
+]

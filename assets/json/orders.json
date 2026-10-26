@@ -1,0 +1,114 @@
+[
+  {
+    "id": "ORD-784512",
+    "orderDate": "2024-05-01T10:30:00",
+    "status": "delivered",
+    "totalAmount": 2660,
+    "items": [
+      {
+        "name": "Urea (46% N)",
+        "quantity": 10,
+        "price": 266,
+        "image": "assets/uriya.png",
+        "unit": "45 kg"
+      }
+    ],
+    "deliveryAddress": {
+      "name": "Ramesh Kumar",
+      "address": "Rampur Kalan, Shahjahanpur, UP",
+      "phone": "+91 98765 43210"
+    },
+    "paymentMethod": "Cash on Delivery"
+  },
+  {
+    "id": "ORD-784513",
+    "orderDate": "2024-04-28T14:15:00",
+    "status": "onTheWay",
+    "totalAmount": 1350,
+    "items": [
+      {
+        "name": "DAP (18:46:0)",
+        "quantity": 1,
+        "price": 1350,
+        "image": "assets/dap_image.png",
+        "unit": "50 kg"
+      }
+    ],
+    "deliveryAddress": {
+      "name": "Ramesh Kumar",
+      "address": "Rampur Kalan, Shahjahanpur, UP",
+      "phone": "+91 98765 43210"
+    },
+    "paymentMethod": "UPI"
+  },
+  {
+    "id": "ORD-784514",
+    "orderDate": "2024-04-25T09:00:00",
+    "status": "confirmed",
+    "totalAmount": 2170,
+    "items": [
+      {
+        "name": "Potash (MOP)",
+        "quantity": 1,
+        "price": 720,
+        "image": "assets/uriya.png",
+        "unit": "50 kg"
+      },
+      {
+        "name": "NPK (19:19:19)",
+        "quantity": 1,
+        "price": 1450,
+        "image": "assets/dap_image.png",
+        "unit": "50 kg"
+      }
+    ],
+    "deliveryAddress": {
+      "name": "Ramesh Kumar",
+      "address": "Rampur Kalan, Shahjahanpur, UP",
+      "phone": "+91 98765 43210"
+    },
+    "paymentMethod": "Cash on Delivery"
+  },
+  {
+    "id": "ORD-784515",
+    "orderDate": "2024-04-20T16:45:00",
+    "status": "cancelled",
+    "totalAmount": 450,
+    "items": [
+      {
+        "name": "Insecticide Pro",
+        "quantity": 1,
+        "price": 450,
+        "image": "assets/uriya.png",
+        "unit": "500 ml"
+      }
+    ],
+    "deliveryAddress": {
+      "name": "Ramesh Kumar",
+      "address": "Rampur Kalan, Shahjahanpur, UP",
+      "phone": "+91 98765 43210"
+    },
+    "paymentMethod": "UPI"
+  },
+  {
+    "id": "ORD-784516",
+    "orderDate": "2024-05-02T11:20:00",
+    "status": "processing",
+    "totalAmount": 266,
+    "items": [
+      {
+        "name": "Urea (46% N)",
+        "quantity": 1,
+        "price": 266,
+        "image": "assets/uriya.png",
+        "unit": "45 kg"
+      }
+    ],
+    "deliveryAddress": {
+      "name": "Ramesh Kumar",
+      "address": "Rampur Kalan, Shahjahanpur, UP",
+      "phone": "+91 98765 43210"
+    },
+    "paymentMethod": "Cash on Delivery"
+  }
+]

@@ -1,0 +1,31 @@
+{
+  "items": [
+    {
+      "productId": "urea_001",
+      "name": "Urea (46% N)",
+      "image": "assets/uriya.png",
+      "price": 266,
+      "quantity": 2,
+      "unit": "45 kg"
+    },
+    {
+      "productId": "dap_001",
+      "name": "DAP (18:46:0)",
+      "image": "assets/dap_image.png",
+      "price": 1350,
+      "quantity": 1,
+      "unit": "50 kg"
+    }
+  ],
+  "summary": {
+    "subtotal": 1882,
+    "deliveryCharge": 40,
+    "discount": 0,
+    "total": 1922
+  },
+  "deliveryAddress": {
+    "name": "Ramesh Kumar",
+    "address": "Rampur Kalan, Shahjahanpur, UP - 242001",
+    "phone": "+91 98765 43210"
+  }
+}

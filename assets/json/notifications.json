@@ -1,0 +1,57 @@
+[
+  {
+    "id": "notif_001",
+    "type": "weather_alert",
+    "title": "Weather Alert",
+    "body": "Heavy rain expected in your area tomorrow. Protect your crops accordingly.",
+    "icon": "thunderstorm",
+    "color": "#FF9800",
+    "time": "2 hours ago",
+    "isRead": false,
+    "gradient": ["#FF9800", "#F57C00"]
+  },
+  {
+    "id": "notif_002",
+    "type": "fertilizer_reminder",
+    "title": "Fertilizer Reminder",
+    "body": "Time to apply urea to your wheat crop. Optimal application period starts today.",
+    "icon": "agriculture",
+    "color": "#4CAF50",
+    "time": "5 hours ago",
+    "isRead": false,
+    "gradient": ["#4CAF50", "#2E7D32"]
+  },
+  {
+    "id": "notif_003",
+    "type": "order_update",
+    "title": "Order Delivered",
+    "body": "Your order #ORD-784512 has been delivered successfully.",
+    "icon": "local_shipping",
+    "color": "#2196F3",
+    "time": "1 day ago",
+    "isRead": true,
+    "gradient": ["#2196F3", "#1976D2"]
+  },
+  {
+    "id": "notif_004",
+    "type": "offer",
+    "title": "New Offer",
+    "body": "Get 15% OFF on all pesticides. Limited time offer!",
+    "icon": "local_offer",
+    "color": "#9C27B0",
+    "time": "2 days ago",
+    "isRead": true,
+    "gradient": ["#9C27B0", "#7B1FA2"]
+  },
+  {
+    "id": "notif_005",
+    "type": "advisory",
+    "title": "Expert Reply",
+    "body": "Dr. Sharma has replied to your crop disease query. Check now!",
+    "icon": "chat",
+    "color": "#00BCD4",
+    "time": "3 days ago",
+    "isRead": true,
+    "gradient": ["#00BCD4", "#0097A7"]
+  }
+]

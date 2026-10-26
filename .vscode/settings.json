@@ -1,0 +1,27 @@
+{
+    "dart.flutterSdkPath": null,
+    "dart.sdkPath": null,
+    "dart.openDevTools": "flutter",
+    "dart.previewFlutterUiGuides": true,
+    "dart.previewFlutterUiGuidesCustomTracking": true,
+    "dart.showInspectorNotificationsForWidgetErrors": true,
+    "dart.debugExternalPackageLibraries": false,
+    "dart.debugSdkLibraries": false,
+    "editor.formatOnSave": true,
+    "editor.formatOnType": true,
+    "editor.rulers": [80],
+    "editor.selectionHighlight": false,
+    "editor.suggest.snippetsPreventQuickSuggestions": false,
+    "editor.suggestSelection": "first",
+    "editor.tabCompletion": "onlySnippets",
+    "editor.wordBasedSuggestions": "off",
+    "files.associations": {
+        "*.dart": "dart"
+    },
+    "files.exclude": {
+        "**/build": true,
+        "**/.dart_tool": true,
+        "**/.idea": true,
+        "**/.vscode": false
+    }
+}

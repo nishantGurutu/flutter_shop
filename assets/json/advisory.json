@@ -1,0 +1,93 @@
+{
+  "weather": {
+    "temperature": 28,
+    "condition": "Sunny",
+    "conditionHi": "धूप",
+    "humidity": 65,
+    "windSpeed": 12,
+    "location": "Rampur Kalan",
+    "forecast": [
+      {
+        "day": "Mon",
+        "temp": 29,
+        "condition": "sunny"
+      },
+      {
+        "day": "Tue",
+        "temp": 28,
+        "condition": "cloudy"
+      },
+      {
+        "day": "Wed",
+        "temp": 27,
+        "condition": "rainy"
+      }
+    ]
+  },
+  "smartTips": [
+    {
+      "id": "tip_001",
+      "title": "Smart Suggestions",
+      "titleHi": "स्मार्ट सुझाव",
+      "description": "Get suitable time and fertilizer information for wheat farming.",
+      "descriptionHi": "गेहूं की खेती के लिए उपयुक्त समय और उर्वरक की जानकारी प्राप्त करें।",
+      "buttonText": "Check Now",
+      "buttonTextHi": "अभी जांचें",
+      "image": "assets/farmer_1.png"
+    },
+    {
+      "id": "tip_002",
+      "title": "Disease Detection",
+      "titleHi": "बीमारी पहचान",
+      "description": "Upload crop disease photo and get solution.",
+      "descriptionHi": "फसल की बीमारी की फोटो अपलोड करें और समाधान पाएं।",
+      "buttonText": "Start",
+      "buttonTextHi": "शुरू करें",
+      "image": "assets/farmer_1.png"
+    }
+  ],
+  "expertCategories": [
+    {
+      "id": "crop_doctor",
+      "title": "Crop Doctor",
+      "titleHi": "फसल डॉक्टर",
+      "icon": "local_hospital",
+      "color": "#4CAF50"
+    },
+    {
+      "id": "soil_expert",
+      "title": "Soil Expert",
+      "titleHi": "मिट्टी विशेषज्ञ",
+      "icon": "terrain",
+      "color": "#795548"
+    },
+    {
+      "id": "pest_expert",
+      "title": "Pest Expert",
+      "titleHi": "कीट विशेषज्ञ",
+      "icon": "bug_report",
+      "color": "#FF5722"
+    },
+    {
+      "id": "weather_expert",
+      "title": "Weather Expert",
+      "titleHi": "मौसम विशेषज्ञ",
+      "icon": "wb_sunny",
+      "color": "#FF9800"
+    }
+  ],
+  "faq": [
+    {
+      "question": "When should I apply urea to wheat?",
+      "questionHi": "गेहूं में यूरिया कब डालें?",
+      "answer": "Apply urea 30-35 days after sowing for best results.",
+      "answerHi": "बोने के 30-35 दिन बाद यूरिया डालें।"
+    },
+    {
+      "question": "How to control aphids in crops?",
+      "questionHi": "फसलों में एफिड्स को कैसे नियंत्रित करें?",
+      "answer": "Use neem oil spray or insecticidal soap for organic control.",
+      "answerHi": "जैविक नियंत्रण के लिए नीम ऑयल स्प्रे या कीटनाशक साबुन का उपयोग करें।"
+    }
+  ]
+}

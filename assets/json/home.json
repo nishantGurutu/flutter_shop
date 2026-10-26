@@ -1,0 +1,104 @@
+{
+  "user": {
+    "name": "Ramesh",
+    "location": "Rampur Kalan, UP",
+    "avatar": "assets/farmer.png"
+  },
+  "weather": {
+    "temperature": 28,
+    "condition": "Partly Cloudy",
+    "high": 32,
+    "low": 22,
+    "humidity": 65,
+    "windSpeed": 12,
+    "location": "Rampur Kalan, Shahjahanpur, UP"
+  },
+  "quick_actions": [
+    {
+      "id": "buy_fertilizer",
+      "title": "Buy\nFertilizer",
+      "icon": "agriculture",
+      "bgColor": "#E8F5E9",
+      "iconColor": "#2E7D32",
+      "route": "/store"
+    },
+    {
+      "id": "crop_doctor",
+      "title": "Crop\nDoctor",
+      "icon": "camera",
+      "bgColor": "#FFF3E0",
+      "iconColor": "#E65100",
+      "route": "/advisory"
+    },
+    {
+      "id": "ask_expert",
+      "title": "Ask\nExpert",
+      "icon": "chat",
+      "bgColor": "#E3F2FD",
+      "iconColor": "#1565C0",
+      "route": "/chat"
+    },
+    {
+      "id": "reorder",
+      "title": "Reorder",
+      "icon": "replay",
+      "bgColor": "#F3E5F5",
+      "iconColor": "#6A1B9A",
+      "route": "/orders"
+    }
+  ],
+  "recommendations": [
+    {
+      "id": "urea_001",
+      "name": "Urea",
+      "subtitle": "(46% N) NPH",
+      "price": 266,
+      "unit": "45 kg",
+      "rating": 4.5,
+      "image": "assets/uriya.png"
+    },
+    {
+      "id": "dap_001",
+      "name": "DAP",
+      "subtitle": "(18:46:0) NiPH",
+      "price": 1350,
+      "unit": "50 kg",
+      "rating": 4.6,
+      "image": "assets/dap_image.png"
+    },
+    {
+      "id": "potash_001",
+      "name": "Potash",
+      "subtitle": "(MOP) NPH",
+      "price": 720,
+      "unit": "50 kg",
+      "rating": 4.3,
+      "image": "assets/uriya.png"
+    },
+    {
+      "id": "npk_001",
+      "name": "NPK",
+      "subtitle": "(19:19:19)",
+      "price": 1450,
+      "unit": "50 kg",
+      "rating": 4.4,
+      "image": "assets/dap_image.png"
+    }
+  ],
+  "offers": [
+    {
+      "id": "offer_001",
+      "title": "Flat 10% OFF",
+      "subtitle": "On All Pesticides",
+      "gradient": ["#E8F5E9", "#C8E6C9"],
+      "image": "assets/dap_image.png"
+    },
+    {
+      "id": "offer_002",
+      "title": "Free Delivery",
+      "subtitle": "On orders above ₹500",
+      "gradient": ["#FFF3E0", "#FFE0B2"],
+      "image": "assets/uriya.png"
+    }
+  ]
+}
