@@ -27,6 +27,7 @@ import 'package:shop/view/authorised/weather/weather_advisory_screen.dart';
 import 'package:shop/view/authorised/mandi/mandi_screen.dart';
 import 'package:shop/view/authorised/khata/khata_screen.dart';
 import 'package:shop/view/unauthorised/profile_setup_screen.dart';
+import 'package:shop/view/authorised/settings/settings_screen.dart';
 
 class Routes {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -143,6 +144,11 @@ class Routes {
       case RoutesName.profileSetup:
         return MaterialPageRoute(
           builder: (BuildContext context) => const ProfileSetupScreen(),
+        );
+
+      case RoutesName.settings:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => const SettingsScreen(),
         );
 
       default:

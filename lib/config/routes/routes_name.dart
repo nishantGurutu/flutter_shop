@@ -37,4 +37,5 @@ class RoutesName {
   static const String mandi = 'mandi_screen';
   static const String khata = 'khata_screen';
   static const String profileSetup = 'profile_setup_screen';
+  static const String settings = 'settings_screen';
 }

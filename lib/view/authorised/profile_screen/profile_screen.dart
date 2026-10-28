@@ -533,6 +533,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         'action': () => Navigator.pushNamed(context, RoutesName.profileSetup),
       },
       {
+        'title': 'ऐप सेटिंग्स व भाषा (Settings & Language)',
+        'icon': Icons.settings_outlined,
+        'action': () => Navigator.pushNamed(context, RoutesName.settings),
+      },
+      {
         'title': 'ताज़ा मंडी भाव व रेट अलर्ट (Mandi & Alerts)',
         'icon': Icons.storefront_outlined,
         'action': () => Navigator.pushNamed(context, RoutesName.mandi),

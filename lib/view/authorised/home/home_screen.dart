@@ -7,6 +7,8 @@ import 'package:shop/config/theme/app_theme.dart';
 import 'package:shop/model/json_models/home_model.dart';
 import 'package:shop/services/farmer_profile_service.dart';
 import 'package:shop/services/json_data_service.dart';
+import 'package:shop/services/language_service.dart';
+import 'package:shop/utils/app_texts.dart';
 import 'package:shop/view/widgets/common/loading_widget.dart' as common;
 import 'package:shop/view/widgets/common/product_tile.dart';
 import 'package:shop/view/widgets/common/section_header.dart';
@@ -21,17 +23,20 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late Future<HomeDataModel> _homeDataFuture;
   final _profileService = FarmerProfileService();
+  final _langService = LanguageService.instance;
 
   @override
   void initState() {
     super.initState();
     _homeDataFuture = JsonDataService.loadHomeData();
     _profileService.addListener(_onProfileUpdate);
+    _langService.addListener(_onProfileUpdate);
   }
 
   @override
   void dispose() {
     _profileService.removeListener(_onProfileUpdate);
+    _langService.removeListener(_onProfileUpdate);
     super.dispose();
   }
 
@@ -246,7 +251,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 children: [
                   Text(
-                    'नमस्ते, ${_profileService.name} ',
+                    '${_langService.isHindi ? 'नमस्ते' : 'Hello'}, ${_profileService.name} ',
                     style: TextStyle(
                       fontSize: 17.sp,
                       fontWeight: FontWeight.bold,
@@ -610,30 +615,31 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildQuickActionGrid() {
+    final isHindi = _langService.isHindi;
     final actions = [
       {
-        'title': 'मंडी भाव\nव अलर्ट',
+        'title': isHindi ? 'मंडी भाव\nव अलर्ट' : 'Mandi Rates\n& Alerts',
         'icon': Icons.storefront_rounded,
         'color': '#2E7D32',
         'bg': '#E8F5E9',
         'route': RoutesName.mandi,
       },
       {
-        'title': 'मौसम व\nस्प्रे सलाह',
+        'title': isHindi ? 'मौसम व\nस्प्रे सलाह' : 'Weather &\nSpray Tips',
         'icon': Icons.sanitizer_rounded,
         'color': '#0288D1',
         'bg': '#E1F5FE',
         'route': RoutesName.weatherAdvisory,
       },
       {
-        'title': 'किसान\nखाता 🎙️',
+        'title': isHindi ? 'किसान\nखाता 🎙️' : 'Kisan\nKhata 🎙️',
         'icon': Icons.mic_rounded,
         'color': '#E65100',
         'bg': '#FFF3E0',
         'route': RoutesName.khata,
       },
       {
-        'title': 'खाद-बीज\nदुकान',
+        'title': isHindi ? 'खाद-बीज\nदुकान' : 'Agri\nStore',
         'icon': Icons.shopping_bag_rounded,
         'color': '#6A1B9A',
         'bg': '#F3E5F5',

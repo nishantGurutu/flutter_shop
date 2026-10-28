@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shop/config/routes/routes_name.dart';
 import 'package:shop/config/theme/app_theme.dart';
 import 'package:shop/services/farmer_profile_service.dart';
+import 'package:shop/services/language_service.dart';
 
 class ProfileSetupScreen extends StatefulWidget {
   final String mobileNumber;
@@ -71,6 +72,9 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       );
       return;
     }
+
+    final langCode = _selectedLanguage.contains('English') ? 'en' : 'hi';
+    LanguageService.instance.changeLanguage(langCode);
 
     final service = FarmerProfileService();
     service.updateProfile(
