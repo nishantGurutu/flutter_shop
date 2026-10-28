@@ -5,7 +5,7 @@ class HomeState extends BaseState {
   final List<UserModel> users;
   final String searchQuery;
 
-  HomeState({
+  const HomeState({
     this.selectedIndex = 1,
     this.users = const [],
     this.searchQuery = '',

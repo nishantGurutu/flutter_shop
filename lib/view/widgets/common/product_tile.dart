@@ -30,7 +30,7 @@ class ProductTile extends StatelessWidget {
     final String image = product is ProductModel
         ? (product as ProductModel).image
         : (product as ProductSummaryModel).image;
-    final double? rating = product is ProductModel
+    final double rating = product is ProductModel
         ? (product as ProductModel).rating
         : (product as ProductSummaryModel).rating;
 
@@ -100,27 +100,27 @@ class ProductTile extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             // Rating
-            if (rating != null) ...[
-              SizedBox(height: 4.h),
-              Row(
-                children: [
-                  Icon(
-                    Icons.star,
-                    size: 14.sp,
-                    color: AppTheme.secondaryColor,
+            ...[
+            SizedBox(height: 4.h),
+            Row(
+              children: [
+                Icon(
+                  Icons.star,
+                  size: 14.sp,
+                  color: AppTheme.secondaryColor,
+                ),
+                SizedBox(width: 2.w),
+                Text(
+                  rating.toString(),
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    color: AppTheme.textSecondary,
+                    fontWeight: FontWeight.w500,
                   ),
-                  SizedBox(width: 2.w),
-                  Text(
-                    rating.toString(),
-                    style: TextStyle(
-                      fontSize: 11.sp,
-                      color: AppTheme.textSecondary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
+          ],
             SizedBox(height: 10.h),
             // Price and Add Button
             Row(

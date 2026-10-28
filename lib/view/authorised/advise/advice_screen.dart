@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shop/config/theme/app_theme.dart';
 import 'package:shop/model/json_models/advisory_model.dart';
 import 'package:shop/services/json_data_service.dart';
-import 'package:shop/view/widgets/common/custom_card.dart';
 import 'package:shop/view/widgets/common/loading_widget.dart' as common;
 import 'package:shop/view/widgets/common/section_header.dart';
 

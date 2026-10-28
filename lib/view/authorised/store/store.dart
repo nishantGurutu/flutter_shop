@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:shop/bloc/cart_bloc/cart_bloc.dart';
+import 'package:shop/config/routes/routes_name.dart';
 import 'package:shop/config/theme/app_theme.dart';
 import 'package:shop/model/json_models/category_model.dart';
 import 'package:shop/model/json_models/product_model.dart';
 import 'package:shop/services/json_data_service.dart';
-import 'package:shop/view/widgets/common/custom_card.dart';
 import 'package:shop/view/widgets/common/loading_widget.dart' as common;
 import 'package:shop/view/widgets/common/product_tile.dart';
 import 'package:shop/view/widgets/common/section_header.dart';
@@ -33,10 +35,49 @@ class _StoreScreenState extends State<StoreScreen> {
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        title: const Text('Shop'),
+        title: const Text('खाद-बीज दुकान (Store)'),
         backgroundColor: Colors.white,
         elevation: 0,
         foregroundColor: AppTheme.textPrimary,
+        actions: [
+          BlocBuilder<CartBloc, CartState>(
+            builder: (context, state) {
+              final count = state.items.fold<int>(0, (sum, item) => sum + item.quantity);
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.shopping_cart_outlined),
+                    onPressed: () => Navigator.pushNamed(context, RoutesName.cart),
+                  ),
+                  if (count > 0)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: AppTheme.error,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                        child: Text(
+                          '$count',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+          SizedBox(width: 8.w),
+        ],
       ),
       body: SafeArea(
         child: Column(
@@ -219,7 +260,29 @@ if (snapshot.hasError) {
         return ProductTile(
           product: product,
           onTap: () {
-            // Navigate to product details
+            Navigator.pushNamed(context, RoutesName.productDetails);
+          },
+          onAddToCart: () {
+            final cartItem = CartItem(
+              productId: product.id,
+              name: '${product.name} ${product.subtitle}',
+              image: product.image,
+              price: product.price,
+              quantity: 1,
+              unit: product.unit,
+            );
+            context.read<CartBloc>().add(AddToCart(product: cartItem));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('${product.name} कार्ट में जोड़ा गया!'),
+                backgroundColor: AppTheme.success,
+                action: SnackBarAction(
+                  label: 'कार्ट देखें',
+                  textColor: Colors.white,
+                  onPressed: () => Navigator.pushNamed(context, RoutesName.cart),
+                ),
+              ),
+            );
           },
         );
       },

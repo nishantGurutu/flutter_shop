@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 /// Base state class that all BLoC states should extend
@@ -27,7 +26,7 @@ abstract class BaseEvent extends Equatable {
 /// Base BLoC class with common functionality
 abstract class BaseBloc<Event extends BaseEvent, State extends BaseState>
     extends Bloc<Event, State> {
-  BaseBloc(State initialState) : super(initialState);
+  BaseBloc(super.initialState);
 
   /// Helper method to emit loading state
   void emitLoading() {

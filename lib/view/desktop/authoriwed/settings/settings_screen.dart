@@ -199,7 +199,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       value: value,
       onChanged: onChanged,
-      activeColor: const Color(0xFF2E7D32),
+      activeThumbColor: const Color(0xFF2E7D32),
       contentPadding: EdgeInsets.zero,
     );
   }

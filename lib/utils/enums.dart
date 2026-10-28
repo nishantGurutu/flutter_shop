@@ -1,4 +1,5 @@
 /// Application enums for type safety and consistency
+library;
 
 enum UserRole {
   customer('customer'),

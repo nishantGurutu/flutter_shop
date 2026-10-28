@@ -6,30 +6,26 @@
             "request": "launch",
             "type": "dart",
             "program": "lib/main.dart",
-            "flutterMode": "debug",
-            "deviceId": ""
+            "flutterMode": "debug"
         },
         {
             "name": "Flutter: Run (Profile)",
             "request": "launch",
             "type": "dart",
             "program": "lib/main.dart",
-            "flutterMode": "profile",
-            "deviceId": ""
+            "flutterMode": "profile"
         },
         {
             "name": "Flutter: Run (Release)",
             "request": "launch",
             "type": "dart",
             "program": "lib/main.dart",
-            "flutterMode": "release",
-            "deviceId": ""
+            "flutterMode": "release"
         },
         {
             "name": "Flutter: Attach",
             "request": "attach",
-            "type": "dart",
-            "deviceId": ""
+            "type": "dart"
         }
     ]
 }

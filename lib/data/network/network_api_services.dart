@@ -26,7 +26,7 @@ class NetworkApiService implements BaseApiServices {
         onRequest: (options, handler) async {
           final token = await StorageHelper.getJwtToken();
           if (token != null && token.isNotEmpty) {
-            options.headers['token'] = '$token';
+            options.headers['token'] = token;
           }
           options.headers['Content-Type'] = 'application/json';
           if (kDebugMode) {

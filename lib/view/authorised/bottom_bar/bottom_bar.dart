@@ -6,31 +6,30 @@ import 'package:shop/bloc/cart_bloc/cart_bloc.dart';
 import 'package:shop/bloc/home_bloc/home_bloc.dart';
 import 'package:shop/bloc/order_bloc/order_bloc.dart';
 import 'package:shop/config/theme/app_theme.dart';
-import 'package:shop/repository/home_api/home_repository.dart';
-import 'package:shop/view/authorised/advise/advice_screen.dart';
 import 'package:shop/view/authorised/home/home_screen.dart';
-import 'package:shop/view/authorised/order/order_screen.dart';
 import 'package:shop/dependency_injection/locator.dart';
 import 'package:shop/view/authorised/profile_screen/profile_screen.dart';
 import 'package:shop/view/authorised/store/store.dart';
+import 'package:shop/view/authorised/mandi/mandi_screen.dart';
+import 'package:shop/view/authorised/khata/khata_screen.dart';
 
 class BottomBarScreen extends StatelessWidget {
   const BottomBarScreen({super.key});
 
   final List<Widget> _screens = const [
     HomeScreen(),
+    MandiScreen(),
+    KhataScreen(),
     StoreScreen(),
-    OrderScreen(),
-    AdviceScreen(),
     ProfileScreen(),
   ];
 
   final List<Map<String, dynamic>> _navItems = const [
-    {'icon': Icons.home_outlined, 'activeIcon': Icons.home, 'label': 'Home'},
-    {'icon': Icons.grid_view_outlined, 'activeIcon': Icons.grid_view, 'label': 'Shop'},
-    {'icon': Icons.receipt_long_outlined, 'activeIcon': Icons.receipt_long, 'label': 'Orders'},
-    {'icon': Icons.support_agent_outlined, 'activeIcon': Icons.support_agent, 'label': 'Advisory'},
-    {'icon': Icons.person_outline, 'activeIcon': Icons.person, 'label': 'Profile'},
+    {'icon': Icons.home_outlined, 'activeIcon': Icons.home, 'label': 'होम'},
+    {'icon': Icons.storefront_outlined, 'activeIcon': Icons.storefront, 'label': 'मंडी भाव'},
+    {'icon': Icons.mic_none_outlined, 'activeIcon': Icons.mic, 'label': 'खाता 🎙️'},
+    {'icon': Icons.shopping_bag_outlined, 'activeIcon': Icons.shopping_bag, 'label': 'दुकान'},
+    {'icon': Icons.person_outline, 'activeIcon': Icons.person, 'label': 'प्रोफ़ाइल'},
   ];
 
   @override

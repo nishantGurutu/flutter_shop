@@ -44,6 +44,7 @@ class CartState extends BaseState {
 
   const CartState({this.items = const [], super.isLoading, super.error});
 
+  @override
   CartState copyWith({List<CartItem>? items, bool? isLoading, String? error}) {
     return CartState(
       items: items ?? this.items,

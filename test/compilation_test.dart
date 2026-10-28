@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shop/core/base_classes.dart';
 import 'package:shop/dependency_injection/locator.dart';
 
 void main() {

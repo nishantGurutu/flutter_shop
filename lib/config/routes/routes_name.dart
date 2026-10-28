@@ -31,7 +31,10 @@ class RoutesName {
   static const String professionalList = 'professional_list_screen';
   static const String professionalProfile = 'professional_profile_screen';
   static const String bookAppointment = 'book_appointment_screen';
- 
 
-
+  // Phase 1 Routes
+  static const String weatherAdvisory = 'weather_advisory_screen';
+  static const String mandi = 'mandi_screen';
+  static const String khata = 'khata_screen';
+  static const String profileSetup = 'profile_setup_screen';
 }

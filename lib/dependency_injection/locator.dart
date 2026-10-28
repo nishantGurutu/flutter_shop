@@ -1,4 +1,6 @@
 import 'dependency_injection.dart';
+import 'package:shop/bloc/cart_bloc/cart_bloc.dart';
+import 'package:shop/services/farmer_profile_service.dart';
 export 'dependency_injection.dart';
 
 final GetIt getIt = GetIt.instance;
@@ -50,5 +52,9 @@ class ServiceLocator {
     getIt.registerLazySingleton<PremiumRepository>(
       () => PremiumHttpRepository(getIt<NetworkService>()),
     );
+
+    // Register CartBloc and FarmerProfileService singletons
+    getIt.registerLazySingleton<CartBloc>(() => CartBloc());
+    getIt.registerLazySingleton<FarmerProfileService>(() => FarmerProfileService());
   }
 }

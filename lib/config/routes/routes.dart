@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shop/config/routes/routes_name.dart';
+import 'package:shop/view/authorised/cart/cart_screen.dart';
 import 'package:shop/view/authorised/home/home_screen.dart';
 import 'package:shop/view/authorised/professional/professional_list_screen.dart';
 import 'package:shop/bloc/professional_list_bloc/professional_list_bloc.dart';
@@ -16,9 +17,17 @@ import 'package:shop/model/professional/professional_model.dart';
 import 'package:shop/bloc/login_bloc/login_bloc.dart';
 import 'package:shop/dependency_injection/locator.dart';
 import 'package:shop/view/product_details/product_details.dart';
-import 'package:shop/view/authorised/cart/cart_screen.dart';
-import 'package:shop/bloc/cart_bloc/cart_bloc.dart';
 import 'package:shop/view/desktop/layout/responsive_wrapper.dart';
+import 'package:shop/view/authorised/store/store.dart';
+import 'package:shop/view/authorised/notification/notification_screen.dart';
+import 'package:shop/view/authorised/profile_screen/profile_screen.dart';
+import 'package:shop/view/authorised/order/order_screen.dart';
+import 'package:shop/view/authorised/advise/advice_screen.dart';
+import 'package:shop/view/authorised/weather/weather_advisory_screen.dart';
+import 'package:shop/view/authorised/mandi/mandi_screen.dart';
+import 'package:shop/view/authorised/khata/khata_screen.dart';
+import 'package:shop/view/unauthorised/profile_setup_screen.dart';
+
 class Routes {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -37,7 +46,7 @@ class Routes {
 
       case RoutesName.home:
         return MaterialPageRoute(
-          builder: (BuildContext context) =>   HomeScreen(),
+          builder: (BuildContext context) => HomeScreen(),
         );
 
       case RoutesName.bottom_bar:
@@ -48,7 +57,8 @@ class Routes {
       case RoutesName.login:
         return MaterialPageRoute(
           builder: (BuildContext context) => BlocProvider(
-            create: (context) => LoginBloc(authRepository: getIt<AuthRepository>()),
+            create: (context) =>
+                LoginBloc(authRepository: getIt<AuthRepository>()),
             child: LoginScreen(),
           ),
         );
@@ -82,18 +92,57 @@ class Routes {
 
       case RoutesName.productDetails:
         return MaterialPageRoute(
-          builder: (BuildContext context) => BlocProvider(
-            create: (context) => CartBloc(),
-            child: const ProductDetailScreen(),
-          ),
+          builder: (BuildContext context) => const ProductDetailScreen(),
         );
 
       case RoutesName.cart:
         return MaterialPageRoute(
-          builder: (BuildContext context) => BlocProvider(
-            create: (context) => CartBloc(),
-            child: const CartScreen(),
-          ),
+          builder: (BuildContext context) => const CartScreen(),
+        );
+
+      case RoutesName.store:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => const StoreScreen(),
+        );
+
+      case RoutesName.notification:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => const NotificationScreen(),
+        );
+
+      case RoutesName.profile:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => const ProfileScreen(),
+        );
+
+      case RoutesName.order:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => const OrderScreen(),
+        );
+
+      case RoutesName.advice:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => const AdviceScreen(),
+        );
+
+      case RoutesName.weatherAdvisory:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => const WeatherAdvisoryScreen(),
+        );
+
+      case RoutesName.mandi:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => const MandiScreen(),
+        );
+
+      case RoutesName.khata:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => const KhataScreen(),
+        );
+
+      case RoutesName.profileSetup:
+        return MaterialPageRoute(
+          builder: (BuildContext context) => const ProfileSetupScreen(),
         );
 
       default:

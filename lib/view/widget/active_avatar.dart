@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 class ActiveAvatar extends StatelessWidget {
   final String name;
-  const ActiveAvatar({required this.name});
+  const ActiveAvatar({super.key, required this.name});
 
   @override
   Widget build(BuildContext context) {

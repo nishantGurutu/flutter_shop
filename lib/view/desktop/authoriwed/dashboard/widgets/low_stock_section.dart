@@ -122,7 +122,7 @@ class _LowStockRow extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               child: Image.asset(image,
                   fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => const Icon(
+                  errorBuilder: (_, _, _) => const Icon(
                       Icons.inventory_2_outlined,
                       color: Colors.grey)),
             ),

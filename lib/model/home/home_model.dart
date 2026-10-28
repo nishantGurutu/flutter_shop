@@ -28,14 +28,14 @@ class UserModel extends Equatable {
   /// Factory constructor for creating a UserModel from JSON
   factory UserModel.fromJson(Map<dynamic, dynamic> json) {
     return UserModel(
-      id: json['id'] as dynamic? ?? '',
-      name: json['name'] as dynamic? ?? '',
+      id: json['id'] as dynamic ?? '',
+      name: json['name'] as dynamic ?? '',
       age: json['age'] as int? ?? 0,
-      profession: json['profession'] as dynamic? ?? '',
-      imageUrl: json['imageUrl'] as dynamic? ?? '',
+      profession: json['profession'] as dynamic ?? '',
+      imageUrl: json['imageUrl'] as dynamic ?? '',
       interests: (json['interests'] as List<dynamic>?)?.cast<dynamic>() ?? [],
-      about: json['about'] as dynamic? ?? '',
-      role: json['role'] as dynamic? ?? '',
+      about: json['about'] as dynamic ?? '',
+      role: json['role'] as dynamic ?? '',
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'] as dynamic)
           : null,
@@ -63,14 +63,14 @@ class UserModel extends Equatable {
 
   /// Create a copy of UserModel with updated fields
   UserModel copyWith({
-    dynamic? id,
-    dynamic? name,
+    dynamic id,
+    dynamic name,
     int? age,
-    dynamic? profession,
-    dynamic? imageUrl,
+    dynamic profession,
+    dynamic imageUrl,
     List<dynamic>? interests,
-    dynamic? about,
-    dynamic? role,
+    dynamic about,
+    dynamic role,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
