@@ -1,3 +1,4 @@
+import 'package:shop/features/daily/voice_entry_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
@@ -35,184 +36,7 @@ class _KhataScreenState extends State<KhataScreen> {
   }
 
   // --- Voice Input Bottom Sheet Modal ---
-  void _showVoiceInputDialog() {
-    bool isListening = true;
-    String transcript = '';
-
-    final sampleVoicePrompts = [
-      '2 बोरी डीएपी खाद 2700 रुपये',
-      'ट्रैक्टर जुताई डीजल 1500 रुपये',
-      '10 क्विंटल गेहूं बेचा 26000 रुपये',
-      'मजदूरों को मजदूरी दी 1800 रुपये',
-      'कीटनाशक स्प्रे दवा 950 रुपये',
-      'साप्ताहिक दूध बिक्री 3500 रुपये',
-    ];
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(26.r)),
-      ),
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 44.w,
-                    height: 5.h,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(10.r),
-                    ),
-                  ),
-                  SizedBox(height: 16.h),
-
-                  Text(
-                    'बोलकर खाता दर्ज करें',
-                    style: TextStyle(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.textPrimary,
-                    ),
-                  ),
-                  SizedBox(height: 6.h),
-                  Text(
-                    'खर्च या कमाई बोलिए, हम स्वतः जोड़ देंगे',
-                    style: TextStyle(
-                      fontSize: 13.sp,
-                      color: AppTheme.textSecondary,
-                    ),
-                  ),
-                  SizedBox(height: 24.h),
-
-                  // Animated Pulsing Mic
-                  GestureDetector(
-                    onTap: () {
-                      setModalState(() {
-                        isListening = !isListening;
-                      });
-                    },
-                    child: Container(
-                      width: 90.w,
-                      height: 90.w,
-                      decoration: BoxDecoration(
-                        color: isListening
-                            ? AppTheme.primaryColor.withValues(alpha: 0.15)
-                            : Colors.grey[100],
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: isListening
-                              ? AppTheme.primaryColor
-                              : Colors.grey[300]!,
-                          width: isListening ? 3 : 1,
-                        ),
-                      ),
-                      child: Center(
-                        child: Container(
-                          width: 66.w,
-                          height: 66.w,
-                          decoration: BoxDecoration(
-                            color: isListening
-                                ? AppTheme.primaryColor
-                                : Colors.grey[400],
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            isListening ? Icons.mic : Icons.mic_off,
-                            color: Colors.white,
-                            size: 32.sp,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(height: 16.h),
-
-                  // Listening wave / status
-                  Text(
-                    isListening
-                        ? '🎙️ सुन रहे हैं... कृपया बोलें'
-                        : 'माइक पर टैप करके बोलें',
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                      color: isListening
-                          ? AppTheme.primaryColor
-                          : AppTheme.textSecondary,
-                    ),
-                  ),
-
-                  SizedBox(height: 16.h),
-
-                  // Helper Prompt Samples
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'या इनमें से कोई उदाहरण चुनें (Tap to Test):',
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textSecondary,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 10.h),
-
-                  Wrap(
-                    spacing: 8.w,
-                    runSpacing: 8.h,
-                    children: sampleVoicePrompts.map((prompt) {
-                      return ActionChip(
-                        avatar: const Icon(
-                          Icons.volume_up,
-                          size: 16,
-                          color: AppTheme.primaryColor,
-                        ),
-                        label: Text(
-                          prompt,
-                          style: TextStyle(
-                            fontSize: 12.sp,
-                            color: AppTheme.textPrimary,
-                          ),
-                        ),
-                        backgroundColor: const Color(0xFFF1F8E9),
-                        side: const BorderSide(color: Color(0xFFC8E6C9)),
-                        onPressed: () {
-                          transcript = prompt;
-                          final entry = _service.parseVoiceInput(prompt);
-                          Navigator.pop(context);
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'सफलतापूर्वक जुड़ा: ${entry.category} - ₹${entry.amount.toStringAsFixed(0)} (${entry.isKharcha ? "खर्च" : "कमाई"})',
-                              ),
-                              backgroundColor: entry.isKharcha
-                                  ? AppTheme.primaryColor
-                                  : AppTheme.success,
-                            ),
-                          );
-                        },
-                      );
-                    }).toList(),
-                  ),
-
-                  SizedBox(height: 16.h),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
+  void _showVoiceInputDialog() => showVoiceEntry(context);
 
   // --- Manual Add Entry Dialog ---
   void _showAddManualEntryDialog() {
@@ -416,8 +240,9 @@ class _KhataScreenState extends State<KhataScreen> {
                       );
                     }).toList(),
                     onChanged: (val) {
-                      if (val != null)
+                      if (val != null) {
                         setModalState(() => selectedCategory = val);
+                      }
                     },
                   ),
 
@@ -456,7 +281,7 @@ class _KhataScreenState extends State<KhataScreen> {
                       ),
                       onPressed: () {
                         final amt = double.tryParse(amountController.text) ?? 0;
-                        if (amt <= 0) {
+                        if (!amt.isFinite || amt <= 0) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('कृपया सही रकम दर्ज करें'),
@@ -466,7 +291,7 @@ class _KhataScreenState extends State<KhataScreen> {
                         }
 
                         final entry = KhataEntryModel(
-                          id: 'khata_${DateTime.now().millisecondsSinceEpoch}',
+                          id: 'khata_${DateTime.now().microsecondsSinceEpoch}',
                           title: noteController.text.trim().isEmpty
                               ? selectedCategory
                               : noteController.text.trim(),
@@ -900,14 +725,17 @@ class _KhataScreenState extends State<KhataScreen> {
 
   Widget _buildKhataEntryTile(KhataEntryModel entry) {
     IconData getCategoryIcon(String cat) {
-      if (cat.contains('खाद') || cat.contains('dap') || cat.contains('यूरिया'))
+      if (cat.contains('खाद') || cat.contains('dap') || cat.contains('यूरिया')) {
         return Icons.eco_outlined;
+      }
       if (cat.contains('बीज')) return Icons.grass;
-      if (cat.contains('डीजल') || cat.contains('मशीन'))
+      if (cat.contains('डीजल') || cat.contains('मशीन')) {
         return Icons.local_gas_station;
+      }
       if (cat.contains('मजदूरी')) return Icons.groups;
-      if (cat.contains('कीटनाशक') || cat.contains('स्प्रे'))
+      if (cat.contains('कीटनाशक') || cat.contains('स्प्रे')) {
         return Icons.sanitizer;
+      }
       if (cat.contains('फसल')) return Icons.agriculture;
       if (cat.contains('दूध')) return Icons.water_drop;
       return Icons.receipt_long;

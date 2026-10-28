@@ -2,12 +2,17 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+    <key>NSAppTransportSecurity</key><dict><key>NSAllowsLocalNetworking</key><true/></dict>
+    <key>NSCameraUsageDescription</key><string>फसल के पत्ते की फोटो लेने के लिए कैमरा चाहिए।</string>
+    <key>NSPhotoLibraryUsageDescription</key><string>फसल जांच के लिए पत्ते की फोटो चुनें।</string>
+    <key>NSMicrophoneUsageDescription</key><string>बोलकर खाता दर्ज करने के लिए microphone चाहिए।</string>
+    <key>NSSpeechRecognitionUsageDescription</key><string>आपकी आवाज को खाते के विवरण में बदलने के लिए।</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Shop</string>
+	<string>Kisan Daily</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>

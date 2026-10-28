@@ -1,26 +1,33 @@
+import 'package:shop/features/daily/farmer_api.dart';
+import 'dart:convert';
+import 'dart:async';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shop/model/khata_model.dart';
 import 'package:shop/model/mandi_model.dart';
 import 'package:shop/model/weather_advisory_model.dart';
 
 class FarmerProfileService extends ChangeNotifier {
-  static final FarmerProfileService _instance = FarmerProfileService._internal();
+  static final FarmerProfileService _instance =
+      FarmerProfileService._internal();
   factory FarmerProfileService() => _instance;
 
-  FarmerProfileService._internal() {
-    _initDefaultData();
-  }
+  FarmerProfileService._internal();
 
   // --- Farmer Profile State ---
-  String _name = 'रामेश पटेल';
-  String _phone = '+91 98765 43210';
+  String _name = 'किसान';
+  String _phone = '';
   String _language = 'हिंदी (Hindi)';
   String _village = 'रामपुर कलां';
   String _district = 'नीमच';
   String _state = 'मध्य प्रदेश';
   String _landArea = '4.5 एकड़';
-  List<String> _selectedCrops = ['गेहूं (Wheat)', 'चना (Chana)', 'सरसों (Mustard)'];
-  bool _isProfileCompleted = true;
+  List<String> _selectedCrops = [
+    'गेहूं (Wheat)',
+    'चना (Chana)',
+    'सरसों (Mustard)',
+  ];
+  bool _isProfileCompleted = false;
 
   String get name => _name;
   String get phone => _phone;
@@ -29,8 +36,13 @@ class FarmerProfileService extends ChangeNotifier {
   String get district => _district;
   String get state => _state;
   String get landArea => _landArea;
-  List<String> get selectedCrops => _selectedCrops;
+  List<String> get selectedCrops => List.unmodifiable(_selectedCrops);
   bool get isProfileCompleted => _isProfileCompleted;
+
+  void updateLanguage(String value) {
+    _language = value;
+    notifyListeners();
+  }
 
   void updateProfile({
     String? name,
@@ -51,7 +63,10 @@ class FarmerProfileService extends ChangeNotifier {
     if (landArea != null) _landArea = landArea;
     if (selectedCrops != null) _selectedCrops = selectedCrops;
     _isProfileCompleted = true;
+    _liveWeather = null;
+    _liveRates = null;
     notifyListeners();
+    unawaited(refreshFeed());
   }
 
   // --- Mandi Rates & Rate Alerts ---
@@ -67,7 +82,9 @@ class FarmerProfileService extends ChangeNotifier {
 
   void selectMandi(String mandi) {
     _selectedMandi = mandi;
+    _liveRates = null;
     notifyListeners();
+    unawaited(refreshFeed());
   }
 
   final List<MandiRateModel> _mandiRates = [
@@ -169,41 +186,36 @@ class FarmerProfileService extends ChangeNotifier {
     ),
   ];
 
-  List<MandiRateModel> get mandiRates => _mandiRates;
+  List<MandiRateModel> get mandiRates =>
+      List.unmodifiable(_liveRates ?? _mandiRates);
 
-  final List<RateAlertModel> _rateAlerts = [
-    const RateAlertModel(
-      id: 'ra_1',
-      cropName: 'Wheat',
-      cropHindi: 'गेहूं',
-      mandiName: 'नीमच मंडी',
-      targetPrice: 2700,
-      isAbove: true,
-      isActive: true,
-      createdAt: '24 Oct 2026',
-    ),
-    const RateAlertModel(
-      id: 'ra_2',
-      cropName: 'Mustard',
-      cropHindi: 'सरसों',
-      mandiName: 'नीमच मंडी',
-      targetPrice: 5800,
-      isAbove: true,
-      isActive: true,
-      createdAt: '22 Oct 2026',
-    ),
-  ];
+  final List<RateAlertModel> _rateAlerts = [];
 
-  List<RateAlertModel> get rateAlerts => _rateAlerts;
+  List<RateAlertModel> get rateAlerts => List.unmodifiable(_rateAlerts);
 
-  void addRateAlert(RateAlertModel alert) {
+  Future<void> addRateAlert(RateAlertModel alert) async {
+    if (FarmerApi.configured) {
+      await FarmerApi.post('/rate-alerts', {
+        'id': alert.id,
+        'cropName': alert.cropName,
+        'cropHindi': alert.cropHindi,
+        'mandiName': alert.mandiName,
+        'targetPrice': alert.targetPrice,
+        'isAbove': alert.isAbove,
+        'isActive': alert.isActive,
+      });
+    }
     _rateAlerts.insert(0, alert);
     notifyListeners();
   }
 
-  void toggleRateAlert(String id) {
+  Future<void> toggleRateAlert(String id) async {
     final index = _rateAlerts.indexWhere((a) => a.id == id);
     if (index != -1) {
+      if (FarmerApi.configured)
+        await FarmerApi.post('/rate-alerts/$id', {
+          'isActive': !_rateAlerts[index].isActive,
+        });
       _rateAlerts[index] = _rateAlerts[index].copyWith(
         isActive: !_rateAlerts[index].isActive,
       );
@@ -211,7 +223,9 @@ class FarmerProfileService extends ChangeNotifier {
     }
   }
 
-  void removeRateAlert(String id) {
+  Future<void> removeRateAlert(String id) async {
+    if (FarmerApi.configured)
+      await FarmerApi.post('/rate-alerts/$id', {'deleted': true});
     _rateAlerts.removeWhere((a) => a.id == id);
     notifyListeners();
   }
@@ -248,7 +262,10 @@ class FarmerProfileService extends ChangeNotifier {
 
     // Determine Type
     KhataType type = KhataType.kharcha;
-    if (lower.contains('becha') ||
+    if (lower.contains('बेचा') ||
+        lower.contains('बिक्री') ||
+        lower.contains('कमाई') ||
+        lower.contains('becha') ||
         lower.contains('bikri') ||
         lower.contains('kamai') ||
         lower.contains('aaye') ||
@@ -260,36 +277,78 @@ class FarmerProfileService extends ChangeNotifier {
 
     // Determine Category
     String category = 'अन्य';
-    if (lower.contains('dap') || lower.contains('यूरिया') || lower.contains('urea') || lower.contains('खाद') || lower.contains('khaad')) {
+    if (lower.contains('dap') ||
+        lower.contains('यूरिया') ||
+        lower.contains('urea') ||
+        lower.contains('खाद') ||
+        lower.contains('khaad')) {
       category = 'खाद व उर्वरक';
-    } else if (lower.contains('beej') || lower.contains('बीज') || lower.contains('seed')) {
+    } else if (lower.contains('beej') ||
+        lower.contains('बीज') ||
+        lower.contains('seed')) {
       category = 'बीज (Seeds)';
-    } else if (lower.contains('diesel') || lower.contains('डीजल') || lower.contains('tractor') || lower.contains('ट्रैक्टर')) {
+    } else if (lower.contains('diesel') ||
+        lower.contains('डीजल') ||
+        lower.contains('tractor') ||
+        lower.contains('ट्रैक्टर')) {
       category = 'डीजल व मशीन';
-    } else if (lower.contains('majdoor') || lower.contains('मजदूर') || lower.contains('मजदूरी') || lower.contains('labour')) {
+    } else if (lower.contains('majdoor') ||
+        lower.contains('मजदूर') ||
+        lower.contains('मजदूरी') ||
+        lower.contains('labour')) {
       category = 'मजदूरी (Labour)';
-    } else if (lower.contains('dawai') || lower.contains('दवा') || lower.contains('spray') || lower.contains('कीटनाशक') || lower.contains('keetnashak')) {
+    } else if (lower.contains('dawai') ||
+        lower.contains('दवा') ||
+        lower.contains('spray') ||
+        lower.contains('कीटनाशक') ||
+        lower.contains('keetnashak')) {
       category = 'कीटनाशक व स्प्रे';
-    } else if (lower.contains('sinchai') || lower.contains('सिंचाई') || lower.contains('paani') || lower.contains('बिजली')) {
+    } else if (lower.contains('sinchai') ||
+        lower.contains('सिंचाई') ||
+        lower.contains('paani') ||
+        lower.contains('बिजली')) {
       category = 'सिंचाई व बिजली';
-    } else if (lower.contains('gehu') || lower.contains('गेहूं') || lower.contains('chana') || lower.contains('चना') || lower.contains('sarson') || lower.contains('सरसों') || lower.contains('crop')) {
+    } else if (lower.contains('gehu') ||
+        lower.contains('गेहूं') ||
+        lower.contains('chana') ||
+        lower.contains('चना') ||
+        lower.contains('sarson') ||
+        lower.contains('सरसों') ||
+        lower.contains('crop')) {
       category = 'फसल बिक्री';
-      type = KhataType.kamai;
-    } else if (lower.contains('doodh') || lower.contains('दूध') || lower.contains('milk')) {
+    } else if (lower.contains('doodh') ||
+        lower.contains('दूध') ||
+        lower.contains('milk')) {
       category = 'दूध बिक्री';
-      type = KhataType.kamai;
+      if (lower.contains('बिक्री') ||
+          lower.contains('sold') ||
+          lower.contains('becha')) {
+        type = KhataType.kamai;
+      }
     }
 
-    // Extract Amount (number)
-    final numRegExp = RegExp(r'\d+');
-    final match = numRegExp.firstMatch(spokenText.replaceAll(',', ''));
-    double amount = 500;
-    if (match != null) {
-      amount = double.tryParse(match.group(0) ?? '') ?? 500;
+    // Prefer an explicit currency amount, never the quantity of bags/quintals.
+    var normalized = spokenText.replaceAll(',', '');
+    const digits = '०१२३४५६७८९';
+    for (var i = 0; i < digits.length; i++) {
+      normalized = normalized.replaceAll(digits[i], '$i');
+    }
+    final currency = RegExp(
+      r'(?:₹|rs\.?|inr)\s*(\d+(?:\.\d+)?)|(?:(\d+(?:\.\d+)?)\s*(?:रुपये|रुपए|रुपया|rupees|rupaye|rs))',
+      caseSensitive: false,
+    ).firstMatch(normalized);
+    final numbers = RegExp(r'\d+(?:\.\d+)?').allMatches(normalized).toList();
+    final amount = double.tryParse(
+      currency?.group(1) ??
+          currency?.group(2) ??
+          (numbers.isEmpty ? '' : numbers.last.group(0)!),
+    );
+    if (amount == null || !amount.isFinite || amount <= 0) {
+      throw const FormatException('सही रकम लिखें, जैसे खाद 2700 रुपये');
     }
 
     final entry = KhataEntryModel(
-      id: 'khata_${DateTime.now().millisecondsSinceEpoch}',
+      id: 'khata_${DateTime.now().microsecondsSinceEpoch}',
       title: spokenText,
       category: category,
       amount: amount,
@@ -304,8 +363,66 @@ class FarmerProfileService extends ChangeNotifier {
     return entry;
   }
 
+  WeatherAdvisoryModel? _liveWeather;
+  List<MandiRateModel>? _liveRates;
+  String? feedError;
+  String? feedUpdatedAt;
+  bool loadingFeed = false;
+  bool get hasLiveFeed => _liveWeather != null && _liveRates != null;
+  String get feedStatus => hasLiveFeed
+      ? 'Provider data • $feedUpdatedAt'
+      : (feedError ?? 'उदाहरण डेटा • Live provider connect नहीं है');
+
+  Future<void> refreshFeed() async {
+    if (!FarmerApi.configured || loadingFeed) return;
+    loadingFeed = true;
+    super.notifyListeners();
+    try {
+      final data = await FarmerApi.get(
+        '/daily-feed?district=${Uri.encodeQueryComponent(_district)}&mandi=${Uri.encodeQueryComponent(_selectedMandi)}',
+      );
+      final weather = WeatherAdvisoryModel.fromJson(
+        Map<String, dynamic>.from(data['weather']),
+      );
+      final rates = (data['rates'] as List)
+          .map(
+            (e) => MandiRateModel(
+              id: e['id'],
+              mandiName: e['mandiName'],
+              district: e['district'],
+              state: e['state'],
+              cropName: e['cropName'],
+              cropHindi: e['cropHindi'],
+              variety: e['variety'],
+              minPrice: (e['minPrice'] as num).toDouble(),
+              modalPrice: (e['modalPrice'] as num).toDouble(),
+              maxPrice: (e['maxPrice'] as num).toDouble(),
+              priceChange: (e['priceChange'] as num).toDouble(),
+              arrival: e['arrival'],
+              date: e['date'],
+              icon: 'assets/json/crops.json',
+            ),
+          )
+          .toList();
+      _liveWeather = weather;
+      _liveRates = rates;
+      feedUpdatedAt = data['updatedAt'] as String;
+      feedError = null;
+    } on Object {
+      _liveWeather = null;
+      _liveRates = null;
+      feedError =
+          'Live data नहीं मिला • नीचे उदाहरण डेटा है। Refresh करके फिर जांचें।';
+    } finally {
+      loadingFeed = false;
+      super.notifyListeners();
+    }
+  }
+
   // --- Weather & Agricultural Advisory Data ---
-  WeatherAdvisoryModel get weatherAdvisory => WeatherAdvisoryModel(
+  WeatherAdvisoryModel get weatherAdvisory =>
+      _liveWeather ??
+      WeatherAdvisoryModel(
         location: 'नीमच, मध्य प्रदेश',
         temperature: 27,
         feelsLike: 29,
@@ -450,7 +567,8 @@ class FarmerProfileService extends ChangeNotifier {
             cropName: 'Mustard',
             cropHindi: 'सरसों (Mustard)',
             pestOrDisease: 'माहू / चेपा कीट (Aphids)',
-            recommendation: 'फूल आने से पहले पत्तियों के नीचे कीट दिखने पर तुरंत स्प्रे करें।',
+            recommendation:
+                'फूल आने से पहले पत्तियों के नीचे कीट दिखने पर तुरंत स्प्रे करें।',
             medicine: 'Imidacloprid 17.8% SL या Thiamethoxam',
             dosage: '50-60 ml प्रति एकड़ 150 लीटर पानी में',
           ),
@@ -458,61 +576,158 @@ class FarmerProfileService extends ChangeNotifier {
             cropName: 'Gram',
             cropHindi: 'चना (Gram/Chana)',
             pestOrDisease: 'इल्ली / फली छेदक (Helicoverpa)',
-            recommendation: 'फूल आने की शुरुआत में नीम तेल या फेरोमोन ट्रैप लगाएं।',
+            recommendation:
+                'फूल आने की शुरुआत में नीम तेल या फेरोमोन ट्रैप लगाएं।',
             medicine: 'Emamectin Benzoate 5% SG',
             dosage: '80 ग्राम प्रति एकड़ 150 लीटर पानी में',
           ),
         ],
       );
 
-  void _initDefaultData() {
-    // Populate realistic initial Khata entries
-    _khataEntries.addAll([
-      KhataEntryModel(
-        id: 'init_1',
-        title: '2 बोरी डीएपी (DAP) खाद',
-        category: 'खाद व उर्वरक',
-        amount: 2700,
-        type: KhataType.kharcha,
-        date: DateTime.now().subtract(const Duration(days: 1)),
-        note: 'IFFCO DAP 50kg बैग',
-      ),
-      KhataEntryModel(
-        id: 'init_2',
-        title: 'ट्रैक्टर जुताई डीजल',
-        category: 'डीजल व मशीन',
-        amount: 1450,
-        type: KhataType.kharcha,
-        date: DateTime.now().subtract(const Duration(days: 2)),
-        note: 'खेत की गहरी जुताई 15 लीटर',
-      ),
-      KhataEntryModel(
-        id: 'init_3',
-        title: '12 क्विंटल पुराना गेहूं बिक्री',
-        category: 'फसल बिक्री',
-        amount: 30600,
-        type: KhataType.kamai,
-        date: DateTime.now().subtract(const Duration(days: 4)),
-        note: 'मंडी में ₹2,550/क्विंटल पर',
-      ),
-      KhataEntryModel(
-        id: 'init_4',
-        title: 'गेहूं बीज 40 kg (GW 322)',
-        category: 'बीज (Seeds)',
-        amount: 1600,
-        type: KhataType.kharcha,
-        date: DateTime.now().subtract(const Duration(days: 5)),
-        note: 'प्रमाणित बीज',
-      ),
-      KhataEntryModel(
-        id: 'init_5',
-        title: 'दूध बिक्री साप्ताहिक भुगतान',
-        category: 'दूध बिक्री',
-        amount: 4200,
-        type: KhataType.kamai,
-        date: DateTime.now().subtract(const Duration(days: 6)),
-        note: 'डेयरी कलेक्शन',
-      ),
-    ]);
+  SharedPreferences? _prefs;
+  Future<void> _pendingSave = Future.value();
+  Future<void> flush() => _pendingSave;
+  String _storageKey = 'farmer_state_v1';
+  Future<void> useAccount(String? id) async {
+    await flush();
+    _storageKey = 'farmer_state_v1_${id ?? "signed_out"}';
+    _name = 'किसान';
+    _phone = '';
+    _village = '';
+    _district = 'नीमच';
+    _state = 'मध्य प्रदेश';
+    _language = 'हिंदी (Hindi)';
+    _landArea = '';
+    _selectedCrops = ['गेहूं (Wheat)', 'चना (Chana)'];
+    _isProfileCompleted = false;
+    _khataEntries.clear();
+    _rateAlerts.clear();
+    _selectedMandi = 'नीमच मंडी';
+    _liveWeather = null;
+    _liveRates = null;
+    feedError = null;
+    feedUpdatedAt = null;
+    await init();
+    super.notifyListeners();
+  }
+
+  void applyServerProfile(Map<String, dynamic> data) {
+    _name = data['name'] as String;
+    _phone = data['phone'] as String? ?? '';
+    _village = data['village'] as String? ?? '';
+    _district = (data['district'] as String? ?? '').isEmpty
+        ? 'नीमच'
+        : data['district'];
+    _state = data['state'] as String? ?? 'मध्य प्रदेश';
+    _language = data['language'] as String? ?? 'हिंदी (Hindi)';
+    _landArea = data['landArea'] as String? ?? '';
+    final crops = List<String>.from(data['selectedCrops'] ?? []);
+    if (crops.isNotEmpty) _selectedCrops = crops;
+    _isProfileCompleted = data['profileCompleted'] == true;
+    notifyListeners();
+  }
+
+  Future<void> init() async {
+    _prefs = await SharedPreferences.getInstance();
+    final raw = _prefs!.getString(_storageKey);
+    if (raw == null) return;
+    try {
+      final data = jsonDecode(raw) as Map<String, dynamic>;
+      _name = data['name'] ?? _name;
+      _phone = data['phone'] ?? _phone;
+      _village = data['village'] ?? _village;
+      _district = data['district'] ?? _district;
+      _state = data['state'] ?? _state;
+      _language = data['language'] ?? _language;
+      _landArea = data['landArea'] ?? _landArea;
+      _isProfileCompleted = data['completed'] ?? false;
+      _selectedCrops = List<String>.from(data['crops'] ?? _selectedCrops);
+      _selectedMandi = data['mandi'] ?? _selectedMandi;
+      _khataEntries.clear();
+      for (final e in data['entries'] ?? []) {
+        _khataEntries.add(
+          KhataEntryModel(
+            id: e['id'],
+            title: e['title'],
+            category: e['category'],
+            amount: (e['amount'] as num).toDouble(),
+            type: KhataType.values.byName(e['type']),
+            date: DateTime.parse(e['date']),
+            note: e['note'],
+            cropTag: e['cropTag'],
+            isVoiceEntry: e['voice'] ?? false,
+            voiceTranscript: e['transcript'],
+          ),
+        );
+      }
+      _rateAlerts.clear();
+      for (final e in data['alerts'] ?? []) {
+        _rateAlerts.add(
+          RateAlertModel(
+            id: e['id'],
+            cropName: e['cropName'],
+            cropHindi: e['cropHindi'],
+            mandiName: e['mandiName'],
+            targetPrice: (e['targetPrice'] as num).toDouble(),
+            isAbove: e['isAbove'],
+            isActive: e['isActive'],
+            createdAt: e['createdAt'],
+          ),
+        );
+      }
+    } on Object catch (error) {
+      debugPrint('Could not restore farmer data: $error');
+    }
+  }
+
+  @override
+  void notifyListeners() {
+    final data = jsonEncode({
+      'name': _name,
+      'phone': _phone,
+      'village': _village,
+      'district': _district,
+      'state': _state,
+      'language': _language,
+      'landArea': _landArea,
+      'completed': _isProfileCompleted,
+      'crops': _selectedCrops,
+      'mandi': _selectedMandi,
+      'entries': _khataEntries
+          .map(
+            (e) => {
+              'id': e.id,
+              'title': e.title,
+              'category': e.category,
+              'amount': e.amount,
+              'type': e.type.name,
+              'date': e.date.toIso8601String(),
+              'note': e.note,
+              'cropTag': e.cropTag,
+              'voice': e.isVoiceEntry,
+              'transcript': e.voiceTranscript,
+            },
+          )
+          .toList(),
+      'alerts': _rateAlerts
+          .map(
+            (e) => {
+              'id': e.id,
+              'cropName': e.cropName,
+              'cropHindi': e.cropHindi,
+              'mandiName': e.mandiName,
+              'targetPrice': e.targetPrice,
+              'isAbove': e.isAbove,
+              'isActive': e.isActive,
+              'createdAt': e.createdAt,
+            },
+          )
+          .toList(),
+    });
+    final storageKey = _storageKey;
+    _pendingSave = _pendingSave.then((_) async {
+      await _prefs?.setString(storageKey, data);
+    });
+    super.notifyListeners();
   }
 }

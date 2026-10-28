@@ -1,3 +1,4 @@
+import 'package:shop/features/auth/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shop/config/routes/routes_name.dart';
@@ -7,17 +8,18 @@ import 'package:shop/services/language_service.dart';
 
 class ProfileSetupScreen extends StatefulWidget {
   final String mobileNumber;
-  const ProfileSetupScreen({super.key, this.mobileNumber = '+91 98765 43210'});
+  const ProfileSetupScreen({super.key, this.mobileNumber = ''});
 
   @override
   State<ProfileSetupScreen> createState() => _ProfileSetupScreenState();
 }
 
 class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
-  final _nameController = TextEditingController(text: 'रामेश पटेल');
-  final _villageController = TextEditingController(text: 'रामपुर कलां');
-  final _landController = TextEditingController(text: '4.5 एकड़');
+  final _nameController = TextEditingController();
+  final _villageController = TextEditingController();
+  final _landController = TextEditingController();
 
+  bool _saving = false;
   String _selectedLanguage = 'हिंदी (Hindi)';
   String _selectedDistrict = 'नीमच';
 
@@ -48,7 +50,23 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     {'name': 'कपास (Cotton)', 'icon': '☁️'},
   ];
 
-  final Set<String> _selectedCrops = {'गेहूं (Wheat)', 'चना (Chana)', 'सरसों (Mustard)'};
+  final Set<String> _selectedCrops = {'गेहूं (Wheat)', 'चना (Chana)'};
+
+  @override
+  void initState() {
+    super.initState();
+    final profile = FarmerProfileService();
+    _nameController.text = profile.name;
+    if (profile.isProfileCompleted) {
+      _villageController.text = profile.village;
+      _landController.text = profile.landArea;
+      _selectedDistrict = profile.district;
+      _selectedLanguage = profile.language;
+      _selectedCrops
+        ..clear()
+        ..addAll(profile.selectedCrops);
+    }
+  }
 
   @override
   void dispose() {
@@ -58,14 +76,20 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     super.dispose();
   }
 
-  void _saveProfile() {
+  Future<void> _saveProfile() async {
     if (_nameController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('कृपया अपना नाम दर्ज करें')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('कृपया अपना नाम दर्ज करें')));
       return;
     }
 
+    if (_villageController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('अपना गांव दर्ज करें')));
+      return;
+    }
     if (_selectedCrops.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('कम से कम एक मुख्य फसल चुनें')),
@@ -73,23 +97,40 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       return;
     }
 
-    final langCode = _selectedLanguage.contains('English') ? 'en' : 'hi';
-    LanguageService.instance.changeLanguage(langCode);
-
+    if (_saving) return;
+    setState(() => _saving = true);
     final service = FarmerProfileService();
-    service.updateProfile(
-      name: _nameController.text.trim(),
-      phone: widget.mobileNumber,
-      language: _selectedLanguage,
-      village: _villageController.text.trim().isEmpty ? 'रामपुर कलां' : _villageController.text.trim(),
-      district: _selectedDistrict,
-      landArea: _landController.text.trim().isEmpty ? '4.5 एकड़' : _landController.text.trim(),
-      selectedCrops: _selectedCrops.toList(),
-    );
-
+    try {
+      await AuthService.instance.updateProfile({
+        'name': _nameController.text.trim(),
+        'phone': service.phone,
+        'village': _villageController.text.trim(),
+        'district': _selectedDistrict,
+        'state': service.state,
+        'language': _selectedLanguage,
+        'landArea': _landController.text.trim(),
+        'selectedCrops': _selectedCrops.toList(),
+      });
+      service.applyServerProfile(AuthService.instance.user!.profile);
+      await service.flush();
+      await LanguageService.instance.changeLanguage(
+        _selectedLanguage.contains('English') ? 'en' : 'hi',
+      );
+    } on Object catch (error) {
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error.toString())));
+      return;
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('प्रोफ़ाइल सफलतापूर्वक सेट हो गई! स्वागत है किसान साथी में 🎉'),
+        content: Text(
+          'प्रोफ़ाइल सफलतापूर्वक सेट हो गई! स्वागत है किसान साथी में 🎉',
+        ),
         backgroundColor: AppTheme.success,
       ),
     );
@@ -175,7 +216,9 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               SizedBox(height: 20.h),
 
               // 1. Language Selection (भाषा)
-              _buildSectionTitle('1. अपनी पसंदीदा भाषा चुनें (Select Language)'),
+              _buildSectionTitle(
+                '1. अपनी पसंदीदा भाषा चुनें (Select Language)',
+              ),
               SizedBox(height: 8.h),
               Wrap(
                 spacing: 10.w,
@@ -185,15 +228,23 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   return ChoiceChip(
                     label: Text(lang),
                     selected: isSelected,
-                    selectedColor: AppTheme.primaryColor.withValues(alpha: 0.15),
+                    selectedColor: AppTheme.primaryColor.withValues(
+                      alpha: 0.15,
+                    ),
                     backgroundColor: Colors.white,
                     side: BorderSide(
-                      color: isSelected ? AppTheme.primaryColor : const Color(0xFFDCDCDC),
+                      color: isSelected
+                          ? AppTheme.primaryColor
+                          : const Color(0xFFDCDCDC),
                       width: isSelected ? 1.5 : 1,
                     ),
                     labelStyle: TextStyle(
-                      color: isSelected ? AppTheme.primaryColor : AppTheme.textPrimary,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      color: isSelected
+                          ? AppTheme.primaryColor
+                          : AppTheme.textPrimary,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                       fontSize: 13.sp,
                     ),
                     onSelected: (selected) {
@@ -223,7 +274,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       controller: _nameController,
                       decoration: const InputDecoration(
                         labelText: 'पूरा नाम (Full Name)',
-                        prefixIcon: Icon(Icons.person_outline, color: AppTheme.primaryColor),
+                        prefixIcon: Icon(
+                          Icons.person_outline,
+                          color: AppTheme.primaryColor,
+                        ),
                         border: InputBorder.none,
                         enabledBorder: InputBorder.none,
                         focusedBorder: InputBorder.none,
@@ -234,10 +288,16 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       padding: EdgeInsets.only(top: 8.h),
                       child: Row(
                         children: [
-                          Icon(Icons.phone_android, color: Colors.grey[600], size: 20.sp),
+                          Icon(
+                            Icons.phone_android,
+                            color: Colors.grey[600],
+                            size: 20.sp,
+                          ),
                           SizedBox(width: 12.w),
                           Text(
-                            widget.mobileNumber,
+                            FarmerProfileService().phone.isEmpty
+                                ? 'नंबर नहीं जोड़ा गया'
+                                : FarmerProfileService().phone,
                             style: TextStyle(
                               fontSize: 14.sp,
                               fontWeight: FontWeight.w600,
@@ -246,17 +306,24 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                           ),
                           const Spacer(),
                           Container(
-                            padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 8.w,
+                              vertical: 3.h,
+                            ),
                             decoration: BoxDecoration(
                               color: AppTheme.success.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(6.r),
                             ),
                             child: Row(
                               children: [
-                                Icon(Icons.check_circle, size: 12.sp, color: AppTheme.success),
+                                Icon(
+                                  Icons.check_circle,
+                                  size: 12.sp,
+                                  color: AppTheme.success,
+                                ),
                                 SizedBox(width: 4.w),
                                 Text(
-                                  'सत्यापित OTP',
+                                  'संपर्क नंबर',
                                   style: TextStyle(
                                     fontSize: 10.sp,
                                     fontWeight: FontWeight.w600,
@@ -290,7 +357,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   children: [
                     Text(
                       'जिला चुनें (Select District):',
-                      style: TextStyle(fontSize: 12.sp, color: AppTheme.textSecondary),
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: AppTheme.textSecondary,
+                      ),
                     ),
                     SizedBox(height: 8.h),
                     Wrap(
@@ -301,14 +371,22 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                         return ChoiceChip(
                           label: Text(dist),
                           selected: isSel,
-                          selectedColor: AppTheme.primaryColor.withValues(alpha: 0.15),
+                          selectedColor: AppTheme.primaryColor.withValues(
+                            alpha: 0.15,
+                          ),
                           backgroundColor: const Color(0xFFF7F7F7),
                           side: BorderSide(
-                            color: isSel ? AppTheme.primaryColor : const Color(0xFFE0E0E0),
+                            color: isSel
+                                ? AppTheme.primaryColor
+                                : const Color(0xFFE0E0E0),
                           ),
                           labelStyle: TextStyle(
-                            color: isSel ? AppTheme.primaryColor : AppTheme.textPrimary,
-                            fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
+                            color: isSel
+                                ? AppTheme.primaryColor
+                                : AppTheme.textPrimary,
+                            fontWeight: isSel
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                             fontSize: 12.sp,
                           ),
                           onSelected: (val) {
@@ -324,7 +402,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       controller: _villageController,
                       decoration: const InputDecoration(
                         labelText: 'गाँव का नाम (Village Name)',
-                        prefixIcon: Icon(Icons.home_outlined, color: AppTheme.primaryColor),
+                        prefixIcon: Icon(
+                          Icons.home_outlined,
+                          color: AppTheme.primaryColor,
+                        ),
                         border: InputBorder.none,
                         enabledBorder: InputBorder.none,
                         focusedBorder: InputBorder.none,
@@ -335,8 +416,12 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     TextField(
                       controller: _landController,
                       decoration: const InputDecoration(
-                        labelText: 'जमीन का क्षेत्रफल (Land Area, e.g. 4.5 एकड़)',
-                        prefixIcon: Icon(Icons.landscape_outlined, color: AppTheme.primaryColor),
+                        labelText:
+                            'जमीन का क्षेत्रफल (Land Area, e.g. 4.5 एकड़)',
+                        prefixIcon: Icon(
+                          Icons.landscape_outlined,
+                          color: AppTheme.primaryColor,
+                        ),
                         border: InputBorder.none,
                         enabledBorder: InputBorder.none,
                         focusedBorder: InputBorder.none,
@@ -375,15 +460,23 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     avatar: Text(icon, style: TextStyle(fontSize: 14.sp)),
                     label: Text(name),
                     selected: isSelected,
-                    selectedColor: AppTheme.primaryColor.withValues(alpha: 0.18),
+                    selectedColor: AppTheme.primaryColor.withValues(
+                      alpha: 0.18,
+                    ),
                     backgroundColor: Colors.white,
                     side: BorderSide(
-                      color: isSelected ? AppTheme.primaryColor : const Color(0xFFDCDCDC),
+                      color: isSelected
+                          ? AppTheme.primaryColor
+                          : const Color(0xFFDCDCDC),
                       width: isSelected ? 1.5 : 1,
                     ),
                     labelStyle: TextStyle(
-                      color: isSelected ? AppTheme.primaryColor : AppTheme.textPrimary,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                      color: isSelected
+                          ? AppTheme.primaryColor
+                          : AppTheme.textPrimary,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.w500,
                       fontSize: 12.sp,
                     ),
                     onSelected: (val) {
@@ -415,7 +508,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     ),
                     elevation: 2,
                   ),
-                  onPressed: _saveProfile,
+                  onPressed: _saving ? null : _saveProfile,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -428,7 +521,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                         ),
                       ),
                       SizedBox(width: 8.w),
-                      const Icon(Icons.arrow_forward_rounded, color: Colors.white),
+                      const Icon(
+                        Icons.arrow_forward_rounded,
+                        color: Colors.white,
+                      ),
                     ],
                   ),
                 ),

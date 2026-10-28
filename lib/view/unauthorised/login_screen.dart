@@ -1,479 +1,346 @@
-import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shop/config/routes/routes_name.dart';
-import 'package:shop/config/theme/app_theme.dart';
-import 'package:shop/utils/const_image.dart';
-import 'package:shop/view/unauthorised/profile_setup_screen.dart';
+import 'package:shop/features/auth/auth_flow.dart';
+import 'package:shop/features/auth/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
-
+  final AuthService? auth;
+  final Future<void> Function(AuthUser)? prepareAccount;
+  const LoginScreen({super.key, this.auth, this.prepareAccount});
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _mobileController = TextEditingController(text: '9876543210');
-  final List<TextEditingController> _otpControllers =
-      List.generate(6, (_) => TextEditingController());
-  final List<FocusNode> _otpFocusNodes = List.generate(6, (_) => FocusNode());
-
-  bool _isOtpSent = false;
-  bool _isLoading = false;
-  int _resendCountdown = 30;
-  Timer? _timer;
-
+  final form = GlobalKey<FormState>();
+  final name = TextEditingController();
+  final email = TextEditingController();
+  final mobile = TextEditingController();
+  final password = TextEditingController();
+  final confirm = TextEditingController();
+  late final AuthService auth = widget.auth ?? AuthService.instance;
+  bool register = false;
+  bool busy = false;
+  bool hidden = true;
+  bool confirmHidden = true;
+  String? error;
   @override
   void dispose() {
-    _mobileController.dispose();
-    for (var c in _otpControllers) {
-      c.dispose();
+    for (final controller in [name, email, mobile, password, confirm]) {
+      controller.dispose();
     }
-    for (var f in _otpFocusNodes) {
-      f.dispose();
-    }
-    _timer?.cancel();
     super.dispose();
   }
 
-  void _startTimer() {
-    _timer?.cancel();
-    setState(() => _resendCountdown = 30);
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_resendCountdown > 0) {
-        setState(() => _resendCountdown--);
+  Future<void> finishLogin() async {
+    await (widget.prepareAccount ?? prepareSignedInAccount)(auth.user!);
+    if (!mounted) return;
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      RoutesName.bottom_bar,
+      (_) => false,
+    );
+  }
+
+  Future<void> submit() async {
+    if (busy || !form.currentState!.validate()) return;
+    FocusScope.of(context).unfocus();
+    setState(() {
+      busy = true;
+      error = null;
+    });
+    try {
+      if (register) {
+        await auth.register(
+          name: name.text,
+          email: email.text,
+          mobile: mobile.text,
+          password: password.text,
+          confirmPassword: confirm.text,
+        );
       } else {
-        timer.cancel();
+        await auth.login(mobile.text, password.text);
       }
-    });
+      password.clear();
+      confirm.clear();
+      if (mounted) await finishLogin();
+    } on Object catch (e) {
+      if (mounted) setState(() => error = e.toString());
+    } finally {
+      if (mounted) setState(() => busy = false);
+    }
   }
 
-  void _sendOtp() {
-    final mobile = _mobileController.text.trim();
-    if (mobile.length < 10) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('कृपया सही 10 अंकों का मोबाइल नंबर दर्ज करें')),
-      );
-      return;
-    }
-
-    setState(() => _isLoading = true);
-    Future.delayed(const Duration(milliseconds: 700), () {
-      if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-        _isOtpSent = true;
-      });
-      _startTimer();
-
-      // Pre-fill demo OTP 123456 for convenience
-      const demoOtp = '123456';
-      for (int i = 0; i < 6; i++) {
-        _otpControllers[i].text = demoOtp[i];
+  Future<void> retrySession() async {
+    setState(() {
+      busy = true;
+      error = null;
+    });
+    try {
+      if (await auth.restore()) {
+        await finishLogin();
+      } else if (mounted) {
+        setState(() => error = auth.restoreError ?? 'फिर login करें।');
       }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('OTP भेजा गया: +91 $mobile (डेमो OTP: 123456)'),
-          backgroundColor: AppTheme.success,
-        ),
-      );
-    });
-  }
-
-  void _verifyOtp() {
-    final otp = _otpControllers.map((c) => c.text).join();
-    if (otp.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('कृपया 6 अंकों का OTP दर्ज करें')),
-      );
-      return;
+    } on Object catch (e) {
+      if (mounted) setState(() => error = e.toString());
+    } finally {
+      if (mounted) setState(() => busy = false);
     }
-
-    setState(() => _isLoading = true);
-    Future.delayed(const Duration(milliseconds: 700), () {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-      // Navigate to Profile Setup Screen (Phase 1 flow)
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ProfileSetupScreen(
-            mobileNumber: '+91 ${_mobileController.text.trim()}',
-          ),
-        ),
-      );
-    });
   }
 
+  Widget gap() => const SizedBox(height: 16);
   @override
-  Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          // Background Image
-          SizedBox(
-            height: size.height * 0.55,
-            width: double.infinity,
-            child: Image.asset(
-              loginBackgroundImage,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                decoration: const BoxDecoration(
-                  gradient: AppTheme.primaryGradient,
-                ),
-              ),
-            ),
-          ),
-
-          // Header Overlay with Logo
-          Positioned(
-            top: 50.h,
-            left: 0,
-            right: 0,
-            child: Column(
-              children: [
-                Container(
-                  padding: EdgeInsets.all(12.w),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.92),
-                    shape: BoxShape.circle,
-                    boxShadow: AppTheme.elevatedShadow,
-                  ),
-                  child: Image.asset(
-                    splashImage,
-                    height: 50.h,
-                    errorBuilder: (context, error, stackTrace) => Icon(
-                      Icons.agriculture,
-                      size: 40.sp,
-                      color: AppTheme.primaryColor,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 10.h),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    borderRadius: BorderRadius.circular(20.r),
-                  ),
-                  child: Text(
-                    "किसान साथी • Kisan Daily",
-                    style: TextStyle(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryDark,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 2.h),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.85),
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  child: Text(
-                    "रोज़ का मौसम • मंडी भाव • किसान खाता",
-                    style: TextStyle(
-                      color: AppTheme.primaryColor,
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Bottom Sheet Card
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(22.w),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(30.r),
-                  topRight: Radius.circular(30.r),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.15),
-                    blurRadius: 20,
-                    offset: const Offset(0, -6),
-                  ),
-                ],
-              ),
-              child: SingleChildScrollView(
+  Widget build(BuildContext context) => Scaffold(
+    backgroundColor: const Color(0xFFF4F7EF),
+    body: SafeArea(
+      child: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: AutofillGroup(
+              child: Form(
+                key: form,
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Center(
-                      child: Container(
-                        width: 44.w,
-                        height: 5.h,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(10.r),
-                        ),
-                      ),
+                    const Icon(
+                      Icons.agriculture,
+                      size: 64,
+                      color: Color(0xFF2E7138),
                     ),
-                    SizedBox(height: 16.h),
-
-                    // Title
-                    Text(
-                      _isOtpSent ? "OTP सत्यापन (Verify OTP)" : "लॉगिन करें (Mobile Login)",
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Kisan Daily',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 19.sp,
+                        fontSize: 30,
                         fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimary,
+                        color: Color(0xFF225B2B),
                       ),
                     ),
-                    SizedBox(height: 4.h),
+                    const SizedBox(height: 8),
                     Text(
-                      _isOtpSent
-                          ? "+91 ${_mobileController.text} पर 6 अंकों का कोड भेजा गया है"
-                          : "अपने मोबाइल नंबर से 1-क्लिक OTP द्वारा जुड़े",
-                      style: TextStyle(
-                        fontSize: 13.sp,
-                        color: AppTheme.textSecondary,
+                      register
+                          ? 'अपना किसान खाता बनाएं'
+                          : 'अपने खाते में लॉगिन करें',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                    SizedBox(height: 18.h),
-
-                    if (!_isOtpSent) ...[
-                      // Mobile Input
-                      Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF8F9FA),
-                          borderRadius: BorderRadius.circular(12.r),
-                          border: Border.all(color: const Color(0xFFE0E0E0)),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'मोबाइल नंबर और password से प्रवेश करें',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 28),
+                    if (register) ...[
+                      TextFormField(
+                        key: const Key('auth_name'),
+                        controller: name,
+                        enabled: !busy,
+                        textInputAction: TextInputAction.next,
+                        autofillHints: const [AutofillHints.name],
+                        decoration: const InputDecoration(
+                          labelText: 'पूरा नाम *',
+                          prefixIcon: Icon(Icons.person_outline),
                         ),
-                        padding: EdgeInsets.symmetric(horizontal: 14.w),
-                        child: Row(
-                          children: [
-                            Text(
-                              "🇮🇳 +91",
-                              style: TextStyle(
-                                fontSize: 15.sp,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.textPrimary,
-                              ),
-                            ),
-                            SizedBox(width: 10.w),
-                            Container(width: 1, height: 26.h, color: Colors.grey[300]),
-                            SizedBox(width: 10.w),
-                            Expanded(
-                              child: TextField(
-                                controller: _mobileController,
-                                keyboardType: TextInputType.phone,
-                                maxLength: 10,
-                                style: TextStyle(
-                                  fontSize: 16.sp,
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 1.2,
-                                ),
-                                decoration: const InputDecoration(
-                                  hintText: "98765 43210",
-                                  counterText: "",
-                                  border: InputBorder.none,
-                                  enabledBorder: InputBorder.none,
-                                  focusedBorder: InputBorder.none,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                        validator: (value) =>
+                            (value?.trim().length ?? 0) < 2 ||
+                                value!.trim().length > 80
+                            ? 'नाम 2–80 अक्षर में लिखें'
+                            : null,
                       ),
-                      SizedBox(height: 20.h),
-
-                      // Send OTP Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50.h,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primaryColor,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12.r),
-                            ),
-                            elevation: 2,
+                      gap(),
+                      TextFormField(
+                        key: const Key('auth_email'),
+                        controller: email,
+                        enabled: !busy,
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
+                        autofillHints: const [AutofillHints.email],
+                        autocorrect: false,
+                        decoration: const InputDecoration(
+                          labelText: 'Email (वैकल्पिक)',
+                          prefixIcon: Icon(Icons.email_outlined),
+                        ),
+                        validator: (value) {
+                          final text = value?.trim() ?? '';
+                          if (text.isEmpty) return null;
+                          return text.length > 254 ||
+                                  !RegExp(
+                                    r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
+                                  ).hasMatch(text)
+                              ? 'सही email लिखें'
+                              : null;
+                        },
+                      ),
+                      gap(),
+                    ],
+                    TextFormField(
+                      key: const Key('auth_mobile'),
+                      controller: mobile,
+                      enabled: !busy,
+                      keyboardType: TextInputType.phone,
+                      textInputAction: TextInputAction.next,
+                      autofillHints: register
+                          ? const [AutofillHints.telephoneNumberNational]
+                          : const [AutofillHints.username],
+                      autocorrect: false,
+                      enableSuggestions: false,
+                      decoration: const InputDecoration(
+                        labelText: 'मोबाइल नंबर *',
+                        hintText: '9876543210',
+                        prefixIcon: Icon(Icons.phone_outlined),
+                        helperText: 'भारत का 10 अंकों का मोबाइल नंबर',
+                      ),
+                      validator: (value) =>
+                          RegExp(
+                            r'^[6-9]\d{9}$',
+                          ).hasMatch(AuthService.normalizeMobile(value ?? ''))
+                          ? null
+                          : 'सही मोबाइल नंबर लिखें',
+                    ),
+                    gap(),
+                    TextFormField(
+                      key: const Key('auth_password'),
+                      controller: password,
+                      enabled: !busy,
+                      obscureText: hidden,
+                      autocorrect: false,
+                      enableSuggestions: false,
+                      textInputAction: register
+                          ? TextInputAction.next
+                          : TextInputAction.done,
+                      autofillHints: [
+                        register
+                            ? AutofillHints.newPassword
+                            : AutofillHints.password,
+                      ],
+                      onFieldSubmitted: (_) {
+                        if (!register) submit();
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'Password *',
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        suffixIcon: IconButton(
+                          tooltip: hidden
+                              ? 'Password दिखाएं'
+                              : 'Password छिपाएं',
+                          onPressed: () => setState(() => hidden = !hidden),
+                          icon: Icon(
+                            hidden
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
                           ),
-                          onPressed: _isLoading ? null : _sendOtp,
-                          child: _isLoading
-                              ? const SizedBox(
-                                  width: 22,
-                                  height: 22,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2.5,
-                                  ),
-                                )
-                              : Text(
-                                  "OTP प्राप्त करें (Send OTP)",
-                                  style: TextStyle(
-                                    fontSize: 15.sp,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
                         ),
                       ),
-
-                      SizedBox(height: 12.h),
-                      Center(
-                        child: TextButton(
-                          onPressed: () {
-                            Navigator.pushReplacementNamed(context, RoutesName.bottom_bar);
-                          },
-                          child: Text(
-                            "अतिथि के रूप में देखें (Skip as Guest)",
-                            style: TextStyle(
-                              color: AppTheme.textSecondary,
-                              fontSize: 13.sp,
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ] else ...[
-                      // 6 Digits OTP Row
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: List.generate(6, (index) {
-                          return SizedBox(
-                            width: 44.w,
-                            height: 50.h,
-                            child: TextField(
-                              controller: _otpControllers[index],
-                              focusNode: _otpFocusNodes[index],
-                              keyboardType: TextInputType.number,
-                              textAlign: TextAlign.center,
-                              maxLength: 1,
-                              style: TextStyle(
-                                fontSize: 18.sp,
-                                fontWeight: FontWeight.bold,
-                                color: AppTheme.primaryDark,
-                              ),
-                              decoration: InputDecoration(
-                                counterText: "",
-                                contentPadding: EdgeInsets.zero,
-                                filled: true,
-                                fillColor: const Color(0xFFF5F5F5),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10.r),
-                                  borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10.r),
-                                  borderSide: const BorderSide(
-                                    color: AppTheme.primaryColor,
-                                    width: 2,
-                                  ),
-                                ),
-                              ),
-                              onChanged: (val) {
-                                if (val.isNotEmpty && index < 5) {
-                                  _otpFocusNodes[index + 1].requestFocus();
-                                } else if (val.isEmpty && index > 0) {
-                                  _otpFocusNodes[index - 1].requestFocus();
-                                }
-                              },
-                            ),
-                          );
-                        }),
-                      ),
-                      SizedBox(height: 12.h),
-
-                      // Resend & Change Number
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              setState(() => _isOtpSent = false);
-                            },
-                            child: Text(
-                              "नंबर बदलें (Edit)",
-                              style: TextStyle(
-                                fontSize: 12.sp,
-                                color: AppTheme.primaryColor,
-                                fontWeight: FontWeight.w600,
-                              ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty)
+                          return 'Password लिखें';
+                        if (utf8.encode(value).length > 72 ||
+                            (register && value.length < 8))
+                          return 'कम से कम 8 अक्षर; अधिकतम 72 UTF-8 bytes';
+                        return null;
+                      },
+                    ),
+                    if (register) ...[
+                      gap(),
+                      TextFormField(
+                        key: const Key('auth_confirm'),
+                        controller: confirm,
+                        enabled: !busy,
+                        obscureText: confirmHidden,
+                        autocorrect: false,
+                        enableSuggestions: false,
+                        textInputAction: TextInputAction.done,
+                        onFieldSubmitted: (_) => submit(),
+                        decoration: InputDecoration(
+                          labelText: 'Confirm password *',
+                          prefixIcon: const Icon(Icons.lock_outline),
+                          suffixIcon: IconButton(
+                            tooltip: confirmHidden
+                                ? 'Password दिखाएं'
+                                : 'Password छिपाएं',
+                            onPressed: () =>
+                                setState(() => confirmHidden = !confirmHidden),
+                            icon: Icon(
+                              confirmHidden
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
                             ),
                           ),
-                          _resendCountdown > 0
-                              ? Text(
-                                  "दोबारा भेजें ($_resendCountdown s)",
-                                  style: TextStyle(
-                                    fontSize: 12.sp,
-                                    color: AppTheme.textHint,
-                                  ),
-                                )
-                              : GestureDetector(
-                                  onTap: _sendOtp,
-                                  child: Text(
-                                    "OTP दोबारा भेजें (Resend)",
-                                    style: TextStyle(
-                                      fontSize: 12.sp,
-                                      color: AppTheme.primaryColor,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                        ],
-                      ),
-                      SizedBox(height: 20.h),
-
-                      // Verify OTP Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50.h,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primaryColor,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12.r),
-                            ),
-                            elevation: 2,
-                          ),
-                          onPressed: _isLoading ? null : _verifyOtp,
-                          child: _isLoading
-                              ? const SizedBox(
-                                  width: 22,
-                                  height: 22,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2.5,
-                                  ),
-                                )
-                              : Text(
-                                  "सत्यापित करें व आगे बढ़ें (Verify OTP)",
-                                  style: TextStyle(
-                                    fontSize: 15.sp,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
                         ),
+                        validator: (value) => value == null || value.isEmpty
+                            ? 'Password फिर लिखें'
+                            : value != password.text
+                            ? 'दोनों passwords एक जैसे होने चाहिए'
+                            : null,
                       ),
                     ],
-
-                    SizedBox(height: 10.h),
+                    const SizedBox(height: 20),
+                    if (error != null || auth.restoreError != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: Semantics(
+                          liveRegion: true,
+                          child: Text(
+                            error ?? auth.restoreError!,
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                        ),
+                      ),
+                    FilledButton(
+                      key: const Key('auth_submit'),
+                      onPressed: busy ? null : submit,
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(52),
+                      ),
+                      child: busy
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Text(register ? 'रजिस्टर करें' : 'लॉगिन करें'),
+                    ),
+                    const SizedBox(height: 12),
+                    TextButton(
+                      key: const Key('auth_toggle'),
+                      onPressed: busy
+                          ? null
+                          : () => setState(() {
+                              register = !register;
+                              error = null;
+                              password.clear();
+                              confirm.clear();
+                              form.currentState?.reset();
+                            }),
+                      child: Text(
+                        register
+                            ? 'पहले से खाता है? लॉगिन करें'
+                            : 'नया खाता बनाएं • Register',
+                      ),
+                    ),
+                    if (auth.restoreError != null)
+                      TextButton(
+                        onPressed: busy ? null : retrySession,
+                        child: const Text('पिछला session फिर जांचें'),
+                      ),
                   ],
                 ),
               ),
             ),
           ),
-        ],
+        ),
       ),
-    );
-  }
+    ),
+  );
 }

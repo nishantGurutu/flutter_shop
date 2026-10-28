@@ -15,21 +15,44 @@ class _WeatherAdvisoryScreenState extends State<WeatherAdvisoryScreen> {
   final _service = FarmerProfileService();
 
   @override
+  void initState() {
+    super.initState();
+    _service.addListener(_refresh);
+    _service.refreshFeed();
+  }
+
+  void _refresh() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _service.removeListener(_refresh);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final advisory = _service.weatherAdvisory;
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        title: const Text('मौसम व सीधी सलाह'),
+        title: Text(
+          _service.hasLiveFeed ? 'मौसम व सीधी सलाह' : 'मौसम व सलाह • Demo',
+        ),
         backgroundColor: Colors.white,
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.share_outlined),
+            icon: const Icon(Icons.info_outline),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('आज की मौसम व स्प्रे सलाह शेयर की गई')),
+                const SnackBar(
+                  content: Text(
+                    'यह उदाहरण मौसम है। Live provider अभी connect नहीं है।',
+                  ),
+                ),
               );
             },
           ),
@@ -38,6 +61,10 @@ class _WeatherAdvisoryScreenState extends State<WeatherAdvisoryScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(_service.feedStatus),
+            ),
             // Top Main Weather Hero Card
             _buildWeatherHeroCard(advisory),
 
@@ -57,21 +84,30 @@ class _WeatherAdvisoryScreenState extends State<WeatherAdvisoryScreen> {
                   SizedBox(height: 20.h),
 
                   // 3. Hourly Spray Timeline (घंटे अनुसार स्प्रे स्थिति)
-                  _buildSectionHeader('घंटे अनुसार स्प्रे स्थिति (Hourly Feasibility)', Icons.access_time),
+                  _buildSectionHeader(
+                    'घंटे अनुसार स्प्रे स्थिति (Hourly Feasibility)',
+                    Icons.access_time,
+                  ),
                   SizedBox(height: 10.h),
                   _buildHourlyTimeline(advisory.hourlyForecasts),
 
                   SizedBox(height: 20.h),
 
                   // 4. Crop Specific Spray Guidance (फसल अनुसार सही दवा व मात्रा)
-                  _buildSectionHeader('फसल अनुसार स्प्रे सलाह (Crop Spray Tips)', Icons.grass),
+                  _buildSectionHeader(
+                    'फसल अनुसार स्प्रे सलाह (Crop Spray Tips)',
+                    Icons.grass,
+                  ),
                   SizedBox(height: 10.h),
                   _buildCropSprayList(advisory.cropSprayTips),
 
                   SizedBox(height: 20.h),
 
                   // 5. 7-Day Forecast (7 दिनों का पूर्वानुमान)
-                  _buildSectionHeader('7 दिनों का मौसम पूर्वानुमान (7-Day Forecast)', Icons.calendar_month),
+                  _buildSectionHeader(
+                    '7 दिनों का मौसम पूर्वानुमान (7-Day Forecast)',
+                    Icons.calendar_month,
+                  ),
                   SizedBox(height: 10.h),
                   _buildDailyForecastList(advisory.dailyForecasts),
 
@@ -124,7 +160,11 @@ class _WeatherAdvisoryScreenState extends State<WeatherAdvisoryScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.wb_sunny_outlined, color: Colors.white, size: 14),
+                    const Icon(
+                      Icons.wb_sunny_outlined,
+                      color: Colors.white,
+                      size: 14,
+                    ),
                     SizedBox(width: 4.w),
                     Text(
                       'Live IMD Data',
@@ -161,10 +201,7 @@ class _WeatherAdvisoryScreenState extends State<WeatherAdvisoryScreen> {
                   SizedBox(height: 2.h),
                   Text(
                     'अधिकतम ${advisory.highTemp}° / न्यूनतम ${advisory.lowTemp}°',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 12.sp,
-                    ),
+                    style: TextStyle(color: Colors.white70, fontSize: 12.sp),
                   ),
                 ],
               ),
@@ -185,11 +222,23 @@ class _WeatherAdvisoryScreenState extends State<WeatherAdvisoryScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildWeatherStat(Icons.water_drop_outlined, '${advisory.humidity}%', 'नमी (Humidity)'),
+                _buildWeatherStat(
+                  Icons.water_drop_outlined,
+                  '${advisory.humidity}%',
+                  'नमी (Humidity)',
+                ),
                 Container(height: 24.h, width: 1, color: Colors.white30),
-                _buildWeatherStat(Icons.air, '${advisory.windSpeed} km/h', 'हवा (Wind)'),
+                _buildWeatherStat(
+                  Icons.air,
+                  '${advisory.windSpeed} km/h',
+                  'हवा (Wind)',
+                ),
                 Container(height: 24.h, width: 1, color: Colors.white30),
-                _buildWeatherStat(Icons.umbrella_outlined, '${advisory.rainProbability}%', 'बारिश (Rain)'),
+                _buildWeatherStat(
+                  Icons.umbrella_outlined,
+                  '${advisory.rainProbability}%',
+                  'बारिश (Rain)',
+                ),
               ],
             ),
           ),
@@ -218,10 +267,7 @@ class _WeatherAdvisoryScreenState extends State<WeatherAdvisoryScreen> {
         SizedBox(height: 2.h),
         Text(
           label,
-          style: TextStyle(
-            color: Colors.white70,
-            fontSize: 10.sp,
-          ),
+          style: TextStyle(color: Colors.white70, fontSize: 10.sp),
         ),
       ],
     );
@@ -234,7 +280,10 @@ class _WeatherAdvisoryScreenState extends State<WeatherAdvisoryScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: AppTheme.success.withValues(alpha: 0.4), width: 1.5),
+        border: Border.all(
+          color: AppTheme.success.withValues(alpha: 0.4),
+          width: 1.5,
+        ),
         boxShadow: AppTheme.cardShadow,
       ),
       child: Column(
@@ -251,7 +300,11 @@ class _WeatherAdvisoryScreenState extends State<WeatherAdvisoryScreen> {
                       color: AppTheme.success.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.sanitizer, color: AppTheme.success, size: 20),
+                    child: const Icon(
+                      Icons.sanitizer,
+                      color: AppTheme.success,
+                      size: 20,
+                    ),
                   ),
                   SizedBox(width: 10.w),
                   Text(
@@ -308,7 +361,11 @@ class _WeatherAdvisoryScreenState extends State<WeatherAdvisoryScreen> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.alarm_on, color: AppTheme.primaryColor, size: 18),
+                const Icon(
+                  Icons.alarm_on,
+                  color: AppTheme.primaryColor,
+                  size: 18,
+                ),
                 SizedBox(width: 8.w),
                 Expanded(
                   child: Text(
@@ -335,7 +392,9 @@ class _WeatherAdvisoryScreenState extends State<WeatherAdvisoryScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: const Color(0xFF0288D1).withValues(alpha: 0.3)),
+        border: Border.all(
+          color: const Color(0xFF0288D1).withValues(alpha: 0.3),
+        ),
         boxShadow: AppTheme.cardShadow,
       ),
       child: Column(
@@ -349,7 +408,11 @@ class _WeatherAdvisoryScreenState extends State<WeatherAdvisoryScreen> {
                   color: const Color(0xFFE1F5FE),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.water_drop, color: Color(0xFF0288D1), size: 20),
+                child: const Icon(
+                  Icons.water_drop,
+                  color: Color(0xFF0288D1),
+                  size: 20,
+                ),
               ),
               SizedBox(width: 10.w),
               Text(
@@ -413,16 +476,24 @@ class _WeatherAdvisoryScreenState extends State<WeatherAdvisoryScreen> {
               children: [
                 Text(
                   h.time,
-                  style: TextStyle(fontSize: 11.sp, color: AppTheme.textSecondary),
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    color: AppTheme.textSecondary,
+                  ),
                 ),
                 Text(
                   '${h.temp}°C',
-                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                   decoration: BoxDecoration(
-                    color: isSafe ? AppTheme.success.withValues(alpha: 0.15) : AppTheme.warning.withValues(alpha: 0.15),
+                    color: isSafe
+                        ? AppTheme.success.withValues(alpha: 0.15)
+                        : AppTheme.warning.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(6.r),
                   ),
                   child: Text(
@@ -473,7 +544,10 @@ class _WeatherAdvisoryScreenState extends State<WeatherAdvisoryScreen> {
                     ),
                   ),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 8.w,
+                      vertical: 3.h,
+                    ),
                     decoration: BoxDecoration(
                       color: AppTheme.error.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(6.r),
@@ -510,7 +584,10 @@ class _WeatherAdvisoryScreenState extends State<WeatherAdvisoryScreen> {
               SizedBox(height: 6.h),
               Text(
                 'सलाह: ${tip.recommendation}',
-                style: TextStyle(fontSize: 12.sp, color: AppTheme.textSecondary),
+                style: TextStyle(
+                  fontSize: 12.sp,
+                  color: AppTheme.textSecondary,
+                ),
               ),
             ],
           ),
@@ -539,11 +616,17 @@ class _WeatherAdvisoryScreenState extends State<WeatherAdvisoryScreen> {
                   children: [
                     Text(
                       day.day,
-                      style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     Text(
                       day.date,
-                      style: TextStyle(fontSize: 11.sp, color: AppTheme.textHint),
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: AppTheme.textHint,
+                      ),
                     ),
                   ],
                 ),
@@ -553,14 +636,21 @@ class _WeatherAdvisoryScreenState extends State<WeatherAdvisoryScreen> {
                 child: Row(
                   children: [
                     Icon(
-                      day.rainChance > 30 ? Icons.water_drop : Icons.wb_sunny_outlined,
+                      day.rainChance > 30
+                          ? Icons.water_drop
+                          : Icons.wb_sunny_outlined,
                       size: 16.sp,
-                      color: day.rainChance > 30 ? const Color(0xFF0288D1) : AppTheme.secondaryColor,
+                      color: day.rainChance > 30
+                          ? const Color(0xFF0288D1)
+                          : AppTheme.secondaryColor,
                     ),
                     SizedBox(width: 4.w),
                     Text(
                       '${day.rainChance}%',
-                      style: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
@@ -569,7 +659,10 @@ class _WeatherAdvisoryScreenState extends State<WeatherAdvisoryScreen> {
                 flex: 3,
                 child: Text(
                   '${day.highTemp}° / ${day.lowTemp}°',
-                  style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
               Container(
@@ -578,22 +671,24 @@ class _WeatherAdvisoryScreenState extends State<WeatherAdvisoryScreen> {
                   color: day.spraySuitability == SpraySuitability.safe
                       ? AppTheme.success.withValues(alpha: 0.15)
                       : (day.spraySuitability == SpraySuitability.caution
-                          ? AppTheme.warning.withValues(alpha: 0.15)
-                          : AppTheme.error.withValues(alpha: 0.15)),
+                            ? AppTheme.warning.withValues(alpha: 0.15)
+                            : AppTheme.error.withValues(alpha: 0.15)),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Text(
                   day.spraySuitability == SpraySuitability.safe
                       ? 'स्प्रे करें'
-                      : (day.spraySuitability == SpraySuitability.caution ? 'सावधानी' : 'स्प्रे रोकें'),
+                      : (day.spraySuitability == SpraySuitability.caution
+                            ? 'सावधानी'
+                            : 'स्प्रे रोकें'),
                   style: TextStyle(
                     fontSize: 10.sp,
                     fontWeight: FontWeight.bold,
                     color: day.spraySuitability == SpraySuitability.safe
                         ? AppTheme.success
                         : (day.spraySuitability == SpraySuitability.caution
-                            ? AppTheme.warning
-                            : AppTheme.error),
+                              ? AppTheme.warning
+                              : AppTheme.error),
                   ),
                 ),
               ),

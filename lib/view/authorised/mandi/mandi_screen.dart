@@ -11,7 +11,8 @@ class MandiScreen extends StatefulWidget {
   State<MandiScreen> createState() => _MandiScreenState();
 }
 
-class _MandiScreenState extends State<MandiScreen> with SingleTickerProviderStateMixin {
+class _MandiScreenState extends State<MandiScreen>
+    with SingleTickerProviderStateMixin {
   final _service = FarmerProfileService();
   String _selectedCropFilter = 'सभी (All)';
   late TabController _tabController;
@@ -31,6 +32,7 @@ class _MandiScreenState extends State<MandiScreen> with SingleTickerProviderStat
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _service.addListener(_onServiceUpdate);
+    _service.refreshFeed();
   }
 
   @override
@@ -44,10 +46,22 @@ class _MandiScreenState extends State<MandiScreen> with SingleTickerProviderStat
     if (mounted) setState(() {});
   }
 
+  Future<void> _alertAction(Future<void> Function() action) async {
+    try {
+      await action();
+    } on Object catch (error) {
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error.toString())));
+    }
+  }
+
   void _showAddRateAlertDialog() {
     String selectedCrop = 'गेहूं';
     String cropEnglish = 'Wheat';
     double targetPrice = 2700;
+    bool isAbove = true;
     final priceController = TextEditingController(text: '2700');
 
     showModalBottomSheet(
@@ -79,10 +93,15 @@ class _MandiScreenState extends State<MandiScreen> with SingleTickerProviderStat
                           Container(
                             padding: EdgeInsets.all(8.w),
                             decoration: BoxDecoration(
-                              color: AppTheme.secondaryColor.withValues(alpha: 0.15),
+                              color: AppTheme.secondaryColor.withValues(
+                                alpha: 0.15,
+                              ),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.add_alert, color: AppTheme.secondaryColor),
+                            child: const Icon(
+                              Icons.add_alert,
+                              color: AppTheme.secondaryColor,
+                            ),
                           ),
                           SizedBox(width: 10.w),
                           Text(
@@ -103,67 +122,106 @@ class _MandiScreenState extends State<MandiScreen> with SingleTickerProviderStat
                   ),
                   SizedBox(height: 14.h),
                   Text(
-                    'जब मंडी में फसल का भाव आपके तय भाव पर पहुँचेगा, आपको तुरंत सूचना मिलेगी।',
-                    style: TextStyle(fontSize: 12.sp, color: AppTheme.textSecondary),
+                    'जब मंडी में फसल का भाव आपके तय भाव पर पहुँचेगा, live backend चालू होने पर सूचना मिलेगी। अभी लक्ष्य इस device पर save होगा।',
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: AppTheme.textSecondary,
+                    ),
                   ),
                   SizedBox(height: 16.h),
 
                   // Crop Selector
-                  Text('फसल चुनें (Crop):', style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold)),
+                  Text(
+                    'फसल चुनें (Crop):',
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   SizedBox(height: 8.h),
                   Wrap(
                     spacing: 8.w,
-                    children: ['गेहूं', 'चना', 'सरसों', 'सोयाबीन', 'लहसुन'].map((c) {
-                      final isSel = selectedCrop == c;
-                      return ChoiceChip(
-                        label: Text(c),
-                        selected: isSel,
-                        selectedColor: AppTheme.primaryColor.withValues(alpha: 0.15),
-                        labelStyle: TextStyle(
-                          color: isSel ? AppTheme.primaryColor : AppTheme.textPrimary,
-                          fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
-                        ),
-                        onSelected: (val) {
-                          if (val) {
-                            setModalState(() {
-                              selectedCrop = c;
-                              if (c == 'गेहूं') {
-                                cropEnglish = 'Wheat';
-                                priceController.text = '2750';
-                              } else if (c == 'चना') {
-                                cropEnglish = 'Gram';
-                                priceController.text = '6000';
-                              } else if (c == 'सरसों') {
-                                cropEnglish = 'Mustard';
-                                priceController.text = '5800';
-                              } else if (c == 'सोयाबीन') {
-                                cropEnglish = 'Soyabean';
-                                priceController.text = '4800';
-                              } else if (c == 'लहसुन') {
-                                cropEnglish = 'Garlic';
-                                priceController.text = '16500';
-                              }
-                            });
-                          }
-                        },
-                      );
-                    }).toList(),
+                    children: ['गेहूं', 'चना', 'सरसों', 'सोयाबीन', 'लहसुन'].map(
+                      (c) {
+                        final isSel = selectedCrop == c;
+                        return ChoiceChip(
+                          label: Text(c),
+                          selected: isSel,
+                          selectedColor: AppTheme.primaryColor.withValues(
+                            alpha: 0.15,
+                          ),
+                          labelStyle: TextStyle(
+                            color: isSel
+                                ? AppTheme.primaryColor
+                                : AppTheme.textPrimary,
+                            fontWeight: isSel
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                          onSelected: (val) {
+                            if (val) {
+                              setModalState(() {
+                                selectedCrop = c;
+                                if (c == 'गेहूं') {
+                                  cropEnglish = 'Wheat';
+                                  priceController.text = '2750';
+                                } else if (c == 'चना') {
+                                  cropEnglish = 'Gram';
+                                  priceController.text = '6000';
+                                } else if (c == 'सरसों') {
+                                  cropEnglish = 'Mustard';
+                                  priceController.text = '5800';
+                                } else if (c == 'सोयाबीन') {
+                                  cropEnglish = 'Soyabean';
+                                  priceController.text = '4800';
+                                } else if (c == 'लहसुन') {
+                                  cropEnglish = 'Garlic';
+                                  priceController.text = '16500';
+                                }
+                              });
+                            }
+                          },
+                        );
+                      },
+                    ).toList(),
                   ),
 
                   SizedBox(height: 16.h),
 
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      isAbove
+                          ? 'लक्ष्य से ऊपर जाने पर'
+                          : 'लक्ष्य से नीचे जाने पर',
+                    ),
+                    value: isAbove,
+                    onChanged: (v) => setModalState(() => isAbove = v),
+                  ),
                   // Target Price Input
-                  Text('लक्ष्य भाव (Target Price ₹/क्विंटल):', style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.bold)),
+                  Text(
+                    'लक्ष्य भाव (Target Price ₹/क्विंटल):',
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   SizedBox(height: 8.h),
                   TextField(
                     controller: priceController,
                     keyboardType: TextInputType.number,
-                    style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: AppTheme.primaryColor),
+                    style: TextStyle(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.primaryColor,
+                    ),
                     decoration: InputDecoration(
                       prefixText: '₹ ',
                       suffixText: '/ क्विंटल',
                       hintText: '2700',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
                     ),
                   ),
 
@@ -175,33 +233,59 @@ class _MandiScreenState extends State<MandiScreen> with SingleTickerProviderStat
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primaryColor,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
                       ),
-                      onPressed: () {
-                        targetPrice = double.tryParse(priceController.text) ?? 2700;
+                      onPressed: () async {
+                        final parsed = double.tryParse(priceController.text);
+                        if (parsed == null || !parsed.isFinite || parsed <= 0) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('सही लक्ष्य रकम दर्ज करें'),
+                            ),
+                          );
+                          return;
+                        }
+                        targetPrice = parsed;
                         final newAlert = RateAlertModel(
                           id: 'ra_${DateTime.now().millisecondsSinceEpoch}',
                           cropName: cropEnglish,
                           cropHindi: selectedCrop,
                           mandiName: _service.selectedMandi,
                           targetPrice: targetPrice,
-                          isAbove: true,
+                          isAbove: isAbove,
                           isActive: true,
                           createdAt: 'आज',
                         );
-                        _service.addRateAlert(newAlert);
+                        try {
+                          await _service.addRateAlert(newAlert);
+                        } on Object catch (error) {
+                          if (context.mounted)
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(error.toString())),
+                            );
+                          return;
+                        }
+                        if (!context.mounted) return;
                         Navigator.pop(context);
 
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('$selectedCrop के लिए ₹$targetPrice का रेट अलर्ट सेट किया गया!'),
+                            content: Text(
+                              '$selectedCrop के लिए ₹$targetPrice का रेट अलर्ट सेट किया गया!',
+                            ),
                             backgroundColor: AppTheme.success,
                           ),
                         );
                       },
                       child: Text(
                         'रेट अलर्ट सेट करें (Set Alert)',
-                        style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.bold, color: Colors.white),
+                        style: TextStyle(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
@@ -219,7 +303,11 @@ class _MandiScreenState extends State<MandiScreen> with SingleTickerProviderStat
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       appBar: AppBar(
-        title: const Text('मंडी भाव व रेट अलर्ट'),
+        title: Text(
+          _service.hasLiveFeed
+              ? 'मंडी भाव व रेट अलर्ट'
+              : 'मंडी भाव • Demo व रेट अलर्ट',
+        ),
         backgroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -241,7 +329,7 @@ class _MandiScreenState extends State<MandiScreen> with SingleTickerProviderStat
                 children: [
                   const Icon(Icons.storefront, size: 18),
                   SizedBox(width: 6.w),
-                  const Text('मंडी भाव (Rates)'),
+                  const Text('मंडी भाव • Demo (Rates)'),
                 ],
               ),
             ),
@@ -260,17 +348,18 @@ class _MandiScreenState extends State<MandiScreen> with SingleTickerProviderStat
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [
-          _buildMandiRatesTab(),
-          _buildRateAlertsTab(),
-        ],
+        children: [_buildMandiRatesTab(), _buildRateAlertsTab()],
       ),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: AppTheme.primaryColor,
         icon: const Icon(Icons.add_alert, color: Colors.white),
         label: Text(
           'रेट अलर्ट लगाएं',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13.sp),
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 13.sp,
+          ),
         ),
         onPressed: _showAddRateAlertDialog,
       ),
@@ -307,7 +396,11 @@ class _MandiScreenState extends State<MandiScreen> with SingleTickerProviderStat
                     color: AppTheme.primaryColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.location_city, color: AppTheme.primaryColor, size: 20),
+                  child: const Icon(
+                    Icons.location_city,
+                    color: AppTheme.primaryColor,
+                    size: 20,
+                  ),
                 ),
                 SizedBox(width: 12.w),
                 Expanded(
@@ -316,7 +409,10 @@ class _MandiScreenState extends State<MandiScreen> with SingleTickerProviderStat
                     children: [
                       Text(
                         'मंडी चुनें (Select Mandi)',
-                        style: TextStyle(fontSize: 11.sp, color: AppTheme.textHint),
+                        style: TextStyle(
+                          fontSize: 11.sp,
+                          color: AppTheme.textHint,
+                        ),
                       ),
                       DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
@@ -328,7 +424,10 @@ class _MandiScreenState extends State<MandiScreen> with SingleTickerProviderStat
                             color: AppTheme.textPrimary,
                           ),
                           items: _service.availableMandis.map((m) {
-                            return DropdownMenuItem<String>(value: m, child: Text(m));
+                            return DropdownMenuItem<String>(
+                              value: m,
+                              child: Text(m),
+                            );
                           }).toList(),
                           onChanged: (val) {
                             if (val != null) _service.selectMandi(val);
@@ -389,11 +488,15 @@ class _MandiScreenState extends State<MandiScreen> with SingleTickerProviderStat
                     selectedColor: AppTheme.primaryColor,
                     backgroundColor: Colors.white,
                     side: BorderSide(
-                      color: isSelected ? AppTheme.primaryColor : const Color(0xFFE0E0E0),
+                      color: isSelected
+                          ? AppTheme.primaryColor
+                          : const Color(0xFFE0E0E0),
                     ),
                     labelStyle: TextStyle(
                       color: isSelected ? Colors.white : AppTheme.textPrimary,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.w500,
                       fontSize: 12.sp,
                     ),
                     onSelected: (val) {
@@ -459,7 +562,9 @@ class _MandiScreenState extends State<MandiScreen> with SingleTickerProviderStat
                 decoration: BoxDecoration(
                   color: rate.isUp
                       ? AppTheme.success.withValues(alpha: 0.12)
-                      : (rate.isDown ? AppTheme.error.withValues(alpha: 0.12) : Colors.grey[100]),
+                      : (rate.isDown
+                            ? AppTheme.error.withValues(alpha: 0.12)
+                            : Colors.grey[100]),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Row(
@@ -467,9 +572,13 @@ class _MandiScreenState extends State<MandiScreen> with SingleTickerProviderStat
                     Icon(
                       rate.isUp
                           ? Icons.arrow_upward_rounded
-                          : (rate.isDown ? Icons.arrow_downward_rounded : Icons.remove),
+                          : (rate.isDown
+                                ? Icons.arrow_downward_rounded
+                                : Icons.remove),
                       size: 14.sp,
-                      color: rate.isUp ? AppTheme.success : (rate.isDown ? AppTheme.error : Colors.grey[600]),
+                      color: rate.isUp
+                          ? AppTheme.success
+                          : (rate.isDown ? AppTheme.error : Colors.grey[600]),
                     ),
                     SizedBox(width: 4.w),
                     Text(
@@ -477,7 +586,9 @@ class _MandiScreenState extends State<MandiScreen> with SingleTickerProviderStat
                       style: TextStyle(
                         fontSize: 12.sp,
                         fontWeight: FontWeight.bold,
-                        color: rate.isUp ? AppTheme.success : (rate.isDown ? AppTheme.error : Colors.grey[700]),
+                        color: rate.isUp
+                            ? AppTheme.success
+                            : (rate.isDown ? AppTheme.error : Colors.grey[700]),
                       ),
                     ),
                   ],
@@ -499,11 +610,24 @@ class _MandiScreenState extends State<MandiScreen> with SingleTickerProviderStat
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildPriceMetric('न्यूनतम (Min)', '₹${rate.minPrice.toStringAsFixed(0)}', Colors.grey[800]!),
+                _buildPriceMetric(
+                  'न्यूनतम (Min)',
+                  '₹${rate.minPrice.toStringAsFixed(0)}',
+                  Colors.grey[800]!,
+                ),
                 Container(height: 30.h, width: 1, color: Colors.grey[300]),
-                _buildPriceMetric('औसत (Modal)', '₹${rate.modalPrice.toStringAsFixed(0)}', AppTheme.primaryColor, isHighlighted: true),
+                _buildPriceMetric(
+                  'औसत (Modal)',
+                  '₹${rate.modalPrice.toStringAsFixed(0)}',
+                  AppTheme.primaryColor,
+                  isHighlighted: true,
+                ),
                 Container(height: 30.h, width: 1, color: Colors.grey[300]),
-                _buildPriceMetric('अधिकतम (Max)', '₹${rate.maxPrice.toStringAsFixed(0)}', AppTheme.primaryDark),
+                _buildPriceMetric(
+                  'अधिकतम (Max)',
+                  '₹${rate.maxPrice.toStringAsFixed(0)}',
+                  AppTheme.primaryDark,
+                ),
               ],
             ),
           ),
@@ -524,7 +648,11 @@ class _MandiScreenState extends State<MandiScreen> with SingleTickerProviderStat
                 },
                 child: Row(
                   children: [
-                    Icon(Icons.add_alert, size: 14.sp, color: AppTheme.secondaryColor),
+                    Icon(
+                      Icons.add_alert,
+                      size: 14.sp,
+                      color: AppTheme.secondaryColor,
+                    ),
                     SizedBox(width: 4.w),
                     Text(
                       'अलर्ट लगाएं',
@@ -544,7 +672,7 @@ class _MandiScreenState extends State<MandiScreen> with SingleTickerProviderStat
     );
   }
 
-  void _showSetAlertForCrop(MandiRateModel rate) {
+  Future<void> _showSetAlertForCrop(MandiRateModel rate) async {
     final alert = RateAlertModel(
       id: 'ra_${DateTime.now().millisecondsSinceEpoch}',
       cropName: rate.cropName,
@@ -555,16 +683,32 @@ class _MandiScreenState extends State<MandiScreen> with SingleTickerProviderStat
       isActive: true,
       createdAt: 'आज',
     );
-    _service.addRateAlert(alert);
+    try {
+      await _service.addRateAlert(alert);
+    } on Object catch (error) {
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error.toString())));
+      return;
+    }
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${rate.cropHindi} के लिए ₹${(rate.modalPrice + 100).toStringAsFixed(0)} का रेट अलर्ट सक्रिय!'),
+        content: Text(
+          '${rate.cropHindi} के लिए ₹${(rate.modalPrice + 100).toStringAsFixed(0)} का रेट अलर्ट सक्रिय!',
+        ),
         backgroundColor: AppTheme.success,
       ),
     );
   }
 
-  Widget _buildPriceMetric(String title, String price, Color color, {bool isHighlighted = false}) {
+  Widget _buildPriceMetric(
+    String title,
+    String price,
+    Color color, {
+    bool isHighlighted = false,
+  }) {
     return Column(
       children: [
         Text(
@@ -596,7 +740,11 @@ class _MandiScreenState extends State<MandiScreen> with SingleTickerProviderStat
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.notifications_none, size: 60.sp, color: Colors.grey[400]),
+            Icon(
+              Icons.notifications_none,
+              size: 60.sp,
+              color: Colors.grey[400],
+            ),
             SizedBox(height: 12.h),
             Text(
               'कोई सक्रिय रेट अलर्ट नहीं है',
@@ -611,8 +759,13 @@ class _MandiScreenState extends State<MandiScreen> with SingleTickerProviderStat
             ElevatedButton.icon(
               onPressed: _showAddRateAlertDialog,
               icon: const Icon(Icons.add_alert, color: Colors.white),
-              label: const Text('अलर्ट जोड़ें (Add Alert)', style: TextStyle(color: Colors.white)),
-              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryColor),
+              label: const Text(
+                'अलर्ट जोड़ें (Add Alert)',
+                style: TextStyle(color: Colors.white),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryColor,
+              ),
             ),
           ],
         ),
@@ -650,7 +803,9 @@ class _MandiScreenState extends State<MandiScreen> with SingleTickerProviderStat
                 ),
                 child: Icon(
                   Icons.notifications_active,
-                  color: alert.isActive ? AppTheme.secondaryColor : Colors.grey[400],
+                  color: alert.isActive
+                      ? AppTheme.secondaryColor
+                      : Colors.grey[400],
                   size: 22.sp,
                 ),
               ),
@@ -694,11 +849,17 @@ class _MandiScreenState extends State<MandiScreen> with SingleTickerProviderStat
               Switch(
                 value: alert.isActive,
                 activeThumbColor: AppTheme.primaryColor,
-                onChanged: (_) => _service.toggleRateAlert(alert.id),
+                onChanged: (_) =>
+                    _alertAction(() => _service.toggleRateAlert(alert.id)),
               ),
               IconButton(
-                icon: const Icon(Icons.delete_outline, color: AppTheme.error, size: 20),
-                onPressed: () => _service.removeRateAlert(alert.id),
+                icon: const Icon(
+                  Icons.delete_outline,
+                  color: AppTheme.error,
+                  size: 20,
+                ),
+                onPressed: () =>
+                    _alertAction(() => _service.removeRateAlert(alert.id)),
               ),
             ],
           ),

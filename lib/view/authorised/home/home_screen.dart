@@ -1,3 +1,5 @@
+import 'package:shop/features/daily/daily_screen.dart';
+import 'package:shop/features/daily/voice_entry_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -8,7 +10,6 @@ import 'package:shop/model/json_models/home_model.dart';
 import 'package:shop/services/farmer_profile_service.dart';
 import 'package:shop/services/json_data_service.dart';
 import 'package:shop/services/language_service.dart';
-import 'package:shop/utils/app_texts.dart';
 import 'package:shop/view/widgets/common/loading_widget.dart' as common;
 import 'package:shop/view/widgets/common/product_tile.dart';
 import 'package:shop/view/widgets/common/section_header.dart';
@@ -29,6 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _homeDataFuture = JsonDataService.loadHomeData();
+    _profileService.refreshFeed();
     _profileService.addListener(_onProfileUpdate);
     _langService.addListener(_onProfileUpdate);
   }
@@ -44,88 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (mounted) setState(() {});
   }
 
-  void _showQuickVoiceModal() {
-    final samplePrompts = [
-      '2 बोरी डीएपी खाद 2700 रुपये',
-      'ट्रैक्टर जुताई डीजल 1500 रुपये',
-      '10 क्विंटल गेहूं बेचा 26000 रुपये',
-      'कीटनाशक स्प्रे दवा 950 रुपये',
-    ];
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.all(20.w),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 44.w,
-                height: 5.h,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(10.r),
-                ),
-              ),
-              SizedBox(height: 14.h),
-              Text(
-                '🎙️ बोलकर खर्च या कमाई जोड़ें',
-                style: TextStyle(
-                  fontSize: 17.sp,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimary,
-                ),
-              ),
-              SizedBox(height: 6.h),
-              Text(
-                'नीचे दिए गए उदाहरण पर टैप करें या खाता स्क्रीन में बोलें:',
-                style: TextStyle(fontSize: 12.sp, color: AppTheme.textSecondary),
-              ),
-              SizedBox(height: 16.h),
-              Wrap(
-                spacing: 8.w,
-                runSpacing: 8.h,
-                children: samplePrompts.map((p) {
-                  return ActionChip(
-                    avatar: const Icon(Icons.mic, size: 16, color: AppTheme.primaryColor),
-                    label: Text(p, style: TextStyle(fontSize: 12.sp)),
-                    backgroundColor: const Color(0xFFF1F8E9),
-                    side: const BorderSide(color: Color(0xFFC8E6C9)),
-                    onPressed: () {
-                      final entry = _profileService.parseVoiceInput(p);
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('खाते में जुड़ा: ${entry.category} - ₹${entry.amount.toStringAsFixed(0)}'),
-                          backgroundColor: AppTheme.success,
-                        ),
-                      );
-                    },
-                  );
-                }).toList(),
-              ),
-              SizedBox(height: 16.h),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, RoutesName.khata);
-                  },
-                  child: const Text('पूरा खाता खोलें (Open Khata)'),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
+  void _showQuickVoiceModal() => showVoiceEntry(context);
 
   @override
   Widget build(BuildContext context) {
@@ -136,7 +57,9 @@ class _HomeScreenState extends State<HomeScreen> {
           future: _homeDataFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const common.LoadingWidget(message: 'डेटा लोड हो रहा है...');
+              return const common.LoadingWidget(
+                message: 'डेटा लोड हो रहा है...',
+              );
             }
 
             if (snapshot.hasError) {
@@ -160,6 +83,77 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     // 1. Header (Farmer Name, Gaon/Zila, Notification & Cart actions)
                     _buildTopHeader(),
+                    if (!_profileService.isProfileCompleted)
+                      TextButton.icon(
+                        onPressed: () => Navigator.pushNamed(
+                          context,
+                          RoutesName.profileSetup,
+                        ),
+                        icon: const Icon(Icons.edit_location_alt_outlined),
+                        label: const Text('गांव और फसल की जानकारी जोड़ें'),
+                      ),
+                    const SizedBox(height: 14),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEAF1E3),
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'मेरी खेती 🌱',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const Text(
+                            'कैलेंडर, फसल डॉक्टर, योजनाएं और स्थानीय दुकानें',
+                          ),
+                          const SizedBox(height: 10),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: List.generate(
+                              4,
+                              (index) => ActionChip(
+                                label: Text(
+                                  [
+                                    'कैलेंडर',
+                                    'फसल डॉक्टर',
+                                    'योजनाएं',
+                                    'दुकानें',
+                                  ][index],
+                                ),
+                                onPressed: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        DailyScreen(initialTab: index),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        _profileService.feedStatus,
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                      trailing: IconButton(
+                        tooltip: 'मौसम और मंडी Refresh करें',
+                        onPressed: _profileService.loadingFeed
+                            ? null
+                            : _profileService.refreshFeed,
+                        icon: const Icon(Icons.refresh),
+                      ),
+                    ),
 
                     SizedBox(height: 14.h),
 
@@ -178,7 +172,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     SizedBox(height: 20.h),
 
-                    // 5. Live Mandi Bhaav Ticker & Rate Alert (Phase 1 Requirement)
+                    // 5. Sample Mandi Bhaav Ticker & Rate Alert (Phase 1 Requirement)
                     _buildMandiSectionHeader(),
                     SizedBox(height: 10.h),
                     _buildMandiTicker(),
@@ -194,7 +188,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     SectionHeader(
                       title: 'खाद व उर्वरक (Shop Fertilizers)',
                       actionLabel: 'सभी देखें',
-                      onActionTap: () => Navigator.pushNamed(context, RoutesName.store),
+                      onActionTap: () =>
+                          Navigator.pushNamed(context, RoutesName.store),
                     ),
                     SizedBox(height: 12.h),
                     _buildRecommendedProducts(homeData.recommendations),
@@ -263,14 +258,21 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               SizedBox(height: 3.h),
               GestureDetector(
-                onTap: () => Navigator.pushNamed(context, RoutesName.profileSetup),
+                onTap: () =>
+                    Navigator.pushNamed(context, RoutesName.profileSetup),
                 child: Row(
                   children: [
-                    const Icon(Icons.location_on, color: AppTheme.primaryColor, size: 14),
+                    const Icon(
+                      Icons.location_on,
+                      color: AppTheme.primaryColor,
+                      size: 14,
+                    ),
                     SizedBox(width: 3.w),
                     Flexible(
                       child: Text(
-                        '${_profileService.village}, ${_profileService.district}',
+                        _profileService.village.isEmpty
+                            ? 'गांव और जिला जोड़ें'
+                            : '${_profileService.village}, ${_profileService.district}',
                         style: TextStyle(
                           fontSize: 12.sp,
                           color: AppTheme.textSecondary,
@@ -280,7 +282,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    Icon(Icons.arrow_drop_down, color: Colors.grey[600], size: 18),
+                    Icon(
+                      Icons.arrow_drop_down,
+                      color: Colors.grey[600],
+                      size: 18,
+                    ),
                   ],
                 ),
               ),
@@ -291,7 +297,10 @@ class _HomeScreenState extends State<HomeScreen> {
         // Cart Icon with Dynamic Badge
         BlocBuilder<CartBloc, CartState>(
           builder: (context, state) {
-            final count = state.items.fold<int>(0, (sum, item) => sum + item.quantity);
+            final count = state.items.fold<int>(
+              0,
+              (sum, item) => sum + item.quantity,
+            );
             return Stack(
               clipBehavior: Clip.none,
               children: [
@@ -328,7 +337,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         color: AppTheme.error,
                         shape: BoxShape.circle,
                       ),
-                      constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                      constraints: const BoxConstraints(
+                        minWidth: 18,
+                        minHeight: 18,
+                      ),
                       child: Center(
                         child: Text(
                           '$count',
@@ -416,7 +428,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: Colors.white.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.wb_twilight, color: Color(0xFFFFD54F), size: 22),
+              child: const Icon(
+                Icons.wb_twilight,
+                color: Color(0xFFFFD54F),
+                size: 22,
+              ),
             ),
             SizedBox(width: 12.w),
             Expanded(
@@ -435,7 +451,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       SizedBox(width: 6.w),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 5.w, vertical: 1.h),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 5.w,
+                          vertical: 1.h,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFFFD54F),
                           borderRadius: BorderRadius.circular(4.r),
@@ -453,7 +472,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   SizedBox(height: 2.h),
                   Text(
-                    'मौसम: 27°C साफ़ • गेहूं मंडी: ₹2,650 (+₹45) • स्प्रे अनुकूल',
+                    'मौसम: ${_profileService.weatherAdvisory.temperature}°C • मंडी और आज के काम देखें',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 11.sp,
@@ -464,7 +483,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 13),
+            const Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.white70,
+              size: 13,
+            ),
           ],
         ),
       ),
@@ -517,10 +540,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     SizedBox(height: 3.h),
                     Text(
                       'अधिकतम ${advisory.highTemp}° / न्यूनतम ${advisory.lowTemp}° • हवा ${advisory.windSpeed} km/h',
-                      style: TextStyle(
-                        fontSize: 11.sp,
-                        color: Colors.white70,
-                      ),
+                      style: TextStyle(fontSize: 11.sp, color: Colors.white70),
                     ),
                   ],
                 ),
@@ -544,7 +564,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         SizedBox(width: 4.w),
-                        const Icon(Icons.arrow_forward, size: 12, color: Colors.white),
+                        const Icon(
+                          Icons.arrow_forward,
+                          size: 12,
+                          color: Colors.white,
+                        ),
                       ],
                     ),
                   ],
@@ -566,7 +590,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   Expanded(
                     child: Row(
                       children: [
-                        const Icon(Icons.sanitizer, color: Colors.white, size: 15),
+                        const Icon(
+                          Icons.sanitizer,
+                          color: Colors.white,
+                          size: 15,
+                        ),
                         SizedBox(width: 6.w),
                         Expanded(
                           child: Text(
@@ -588,7 +616,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   Expanded(
                     child: Row(
                       children: [
-                        const Icon(Icons.water_drop, color: Colors.white, size: 15),
+                        const Icon(
+                          Icons.water_drop,
+                          color: Colors.white,
+                          size: 15,
+                        ),
                         SizedBox(width: 6.w),
                         Expanded(
                           child: Text(
@@ -676,12 +708,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     width: 44.w,
                     height: 44.w,
                     decoration: BoxDecoration(
-                      color: Color(int.parse((act['bg'] as String).replaceAll('#', '0xFF'))),
+                      color: Color(
+                        int.parse(
+                          (act['bg'] as String).replaceAll('#', '0xFF'),
+                        ),
+                      ),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       act['icon'] as IconData,
-                      color: Color(int.parse((act['color'] as String).replaceAll('#', '0xFF'))),
+                      color: Color(
+                        int.parse(
+                          (act['color'] as String).replaceAll('#', '0xFF'),
+                        ),
+                      ),
                       size: 24.sp,
                     ),
                   ),
@@ -810,14 +850,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Text(
                       '/ क्विंटल',
-                      style: TextStyle(fontSize: 10.sp, color: AppTheme.textHint),
+                      style: TextStyle(
+                        fontSize: 10.sp,
+                        color: AppTheme.textHint,
+                      ),
                     ),
                     Text(
                       '${r.isUp ? "+" : ""}${r.priceChange.toStringAsFixed(0)}',
                       style: TextStyle(
                         fontSize: 10.sp,
                         fontWeight: FontWeight.bold,
-                        color: r.isUp ? AppTheme.success : (r.isDown ? AppTheme.error : Colors.grey),
+                        color: r.isUp
+                            ? AppTheme.success
+                            : (r.isDown ? AppTheme.error : Colors.grey),
                       ),
                     ),
                   ],
@@ -852,7 +897,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: AppTheme.secondaryColor.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.menu_book, color: AppTheme.secondaryColor, size: 16),
+                    child: const Icon(
+                      Icons.menu_book,
+                      color: AppTheme.secondaryColor,
+                      size: 16,
+                    ),
                   ),
                   SizedBox(width: 8.w),
                   Text(
@@ -885,25 +934,46 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('कुल खर्च: ₹${_profileService.totalKharcha.toStringAsFixed(0)}',
-                        style: TextStyle(fontSize: 12.sp, color: AppTheme.error, fontWeight: FontWeight.bold)),
+                    Text(
+                      'कुल खर्च: ₹${_profileService.totalKharcha.toStringAsFixed(0)}',
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: AppTheme.error,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     SizedBox(height: 2.h),
-                    Text('कुल कमाई: ₹${_profileService.totalKamai.toStringAsFixed(0)}',
-                        style: TextStyle(fontSize: 12.sp, color: AppTheme.success, fontWeight: FontWeight.bold)),
+                    Text(
+                      'कुल कमाई: ₹${_profileService.totalKamai.toStringAsFixed(0)}',
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: AppTheme.success,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
               ),
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryColor,
-                  padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 14.w,
+                    vertical: 8.h,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
                 ),
                 onPressed: _showQuickVoiceModal,
                 icon: const Icon(Icons.mic, size: 16, color: Colors.white),
                 label: Text(
                   'बोलकर लिखें 🎙️',
-                  style: TextStyle(fontSize: 12.sp, color: Colors.white, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
@@ -926,7 +996,8 @@ class _HomeScreenState extends State<HomeScreen> {
             margin: EdgeInsets.only(right: 12.w),
             child: ProductTile(
               product: product,
-              onTap: () => Navigator.pushNamed(context, RoutesName.productDetails),
+              onTap: () =>
+                  Navigator.pushNamed(context, RoutesName.productDetails),
               onAddToCart: () {
                 final cartItem = CartItem(
                   productId: product.id,
@@ -944,7 +1015,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     action: SnackBarAction(
                       label: 'कार्ट देखें',
                       textColor: Colors.white,
-                      onPressed: () => Navigator.pushNamed(context, RoutesName.cart),
+                      onPressed: () =>
+                          Navigator.pushNamed(context, RoutesName.cart),
                     ),
                   ),
                 );
@@ -1020,7 +1092,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       width: 90.w,
                       height: 90.h,
                       color: Colors.grey[200],
-                      child: Icon(Icons.image_not_supported, color: Colors.grey[400]),
+                      child: Icon(
+                        Icons.image_not_supported,
+                        color: Colors.grey[400],
+                      ),
                     );
                   },
                 ),

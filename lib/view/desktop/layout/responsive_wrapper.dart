@@ -25,14 +25,15 @@ class ResponsiveWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (_isDesktop) {
+    if (_isDesktop && const bool.fromEnvironment('ADMIN_DASHBOARD')) {
       // Desktop: provide NavigationBloc + shared BLoCs, then show MainLayout
       return MultiBlocProvider(
         providers: [
           BlocProvider(create: (_) => NavigationBloc()),
           BlocProvider(create: (_) => CartBloc()),
           BlocProvider(
-              create: (_) => HomeBloc(homeRepository: getIt<HomeRepository>())),
+            create: (_) => HomeBloc(homeRepository: getIt<HomeRepository>()),
+          ),
           BlocProvider(create: (_) => OrderBloc()),
         ],
         child: const MainLayout(),

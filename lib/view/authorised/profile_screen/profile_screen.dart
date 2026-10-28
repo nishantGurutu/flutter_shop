@@ -1,3 +1,5 @@
+import 'package:shop/features/auth/auth_service.dart';
+import 'package:shop/features/auth/auth_flow.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shop/config/routes/routes_name.dart';
@@ -75,7 +77,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 8.w,
+                          vertical: 3.h,
+                        ),
                         decoration: BoxDecoration(
                           color: AppTheme.primaryColor.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8.r),
@@ -94,7 +99,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   SizedBox(height: 6.h),
                   Text(
                     'Farmer ke liye free daily app. Farmer roz mausam, mandi bhaav aur khata ke liye kholega, aur kamai un companies se hogi jinhe farmer tak pahunchna hai.',
-                    style: TextStyle(fontSize: 12.sp, color: AppTheme.textSecondary, height: 1.4),
+                    style: TextStyle(
+                      fontSize: 12.sp,
+                      color: AppTheme.textSecondary,
+                      height: 1.4,
+                    ),
                   ),
                   SizedBox(height: 16.h),
 
@@ -103,9 +112,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     phase: 'Phase 1: MVP (0-3 mahine)',
                     status: 'वर्तमान चरण (Active)',
                     statusColor: AppTheme.success,
-                    goal: '1,000 active farmers jodna. Roz app kholne ki aadat daalna.',
+                    goal:
+                        '1,000 active farmers jodna. Roz app kholne ki aadat daalna.',
                     features: [
-                      'Mobile OTP login aur profile (gaon, fasal, bhasha) ✅',
+                      'Mobile/password login aur profile (gaon, fasal, bhasha) ✅',
                       'Mausam aur spray/sinchai ki seedhi salah ✅',
                       'Mandi bhaav aur rate alert ✅',
                       'Khata (kharcha/kamai), voice input ke saath ✅',
@@ -120,7 +130,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     phase: 'Phase 2: Growth (3-6 mahine)',
                     status: 'आगामी (Next)',
                     statusColor: AppTheme.secondaryColor,
-                    goal: '5,000 farmers, pehli kamai (dukaandar, beej/khaad companies).',
+                    goal:
+                        '5,000 farmers, pehli kamai (dukaandar, beej/khaad companies).',
                     features: [
                       'Fasal calendar aur aaj ke kaam ki reminder',
                       'Fasal doctor: patte ki photo se bimari/keede ki pehchaan (AI)',
@@ -136,7 +147,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     phase: 'Phase 3: Marketplace & Scale (6-12 mahine)',
                     status: 'योजनाबद्ध (Planned)',
                     statusColor: Colors.purple,
-                    goal: '20,000+ farmers, marketplace commission, bank/bima leads.',
+                    goal:
+                        '20,000+ farmers, marketplace commission, bank/bima leads.',
                     features: [
                       'Marketplace: beej/khaad kharidna, fasal bechna, machine kiraya',
                       'Bank, bima aur loan apply (farmer ki sahmati ke saath)',
@@ -168,10 +180,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ),
                         SizedBox(height: 8.h),
-                        _buildRuleBullet('Farmer ka data bina uski sahmati ke kisi company ko mat becho'),
-                        _buildRuleBullet('Pehle ek district aur 1-2 fasal par focus karo'),
-                        _buildRuleBullet('Users jud jaane ke baad hi companies se paisa maango'),
-                        _buildRuleBullet('Ek saath bahut saare features mat banao'),
+                        _buildRuleBullet(
+                          'Farmer ka data bina uski sahmati ke kisi company ko mat becho',
+                        ),
+                        _buildRuleBullet(
+                          'Pehle ek district aur 1-2 fasal par focus karo',
+                        ),
+                        _buildRuleBullet(
+                          'Users jud jaane ke baad hi companies se paisa maango',
+                        ),
+                        _buildRuleBullet(
+                          'Ek saath bahut saare features mat banao',
+                        ),
                       ],
                     ),
                   ),
@@ -236,24 +256,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
           SizedBox(height: 6.h),
           Text(
             'लक्ष्य: $goal',
-            style: TextStyle(fontSize: 12.sp, color: AppTheme.primaryDark, fontWeight: FontWeight.w500),
+            style: TextStyle(
+              fontSize: 12.sp,
+              color: AppTheme.primaryDark,
+              fontWeight: FontWeight.w500,
+            ),
           ),
           SizedBox(height: 8.h),
-          ...features.map((f) => Padding(
-                padding: EdgeInsets.only(bottom: 4.h),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('• ', style: TextStyle(color: statusColor, fontWeight: FontWeight.bold)),
-                    Expanded(
-                      child: Text(
-                        f,
-                        style: TextStyle(fontSize: 12.sp, color: AppTheme.textSecondary),
+          ...features.map(
+            (f) => Padding(
+              padding: EdgeInsets.only(bottom: 4.h),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '• ',
+                    style: TextStyle(
+                      color: statusColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      f,
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: AppTheme.textSecondary,
                       ),
                     ),
-                  ],
-                ),
-              )),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -265,7 +300,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.check_circle_outline, size: 14, color: Color(0xFFF57F17)),
+          const Icon(
+            Icons.check_circle_outline,
+            size: 14,
+            color: Color(0xFFF57F17),
+          ),
           SizedBox(width: 6.w),
           Expanded(
             child: Text(
@@ -369,7 +408,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     SizedBox(height: 2.h),
                     Row(
                       children: [
-                        const Icon(Icons.location_on, size: 14, color: AppTheme.primaryColor),
+                        const Icon(
+                          Icons.location_on,
+                          size: 14,
+                          color: AppTheme.primaryColor,
+                        ),
                         SizedBox(width: 4.w),
                         Expanded(
                           child: Text(
@@ -388,8 +431,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.edit_outlined, color: AppTheme.primaryColor),
-                onPressed: () => Navigator.pushNamed(context, RoutesName.profileSetup),
+                icon: const Icon(
+                  Icons.edit_outlined,
+                  color: AppTheme.primaryColor,
+                ),
+                onPressed: () =>
+                    Navigator.pushNamed(context, RoutesName.profileSetup),
               ),
             ],
           ),
@@ -409,7 +456,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   side: const BorderSide(color: Color(0xFFC8E6C9)),
                   label: Text(
                     c,
-                    style: TextStyle(fontSize: 11.sp, color: AppTheme.primaryDark),
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      color: AppTheme.primaryDark,
+                    ),
                   ),
                 );
               }).toList(),
@@ -424,11 +474,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildStatItem('रेट अलर्ट', '${_profileService.rateAlerts.length}'),
+              _buildStatItem(
+                'रेट अलर्ट',
+                '${_profileService.rateAlerts.length}',
+              ),
               _buildStatDivider(),
-              _buildStatItem('खाता बचत', '₹${_profileService.netMunafa.toStringAsFixed(0)}'),
+              _buildStatItem(
+                'खाता बचत',
+                '₹${_profileService.netMunafa.toStringAsFixed(0)}',
+              ),
               _buildStatDivider(),
-              _buildStatItem('फसलें', '${_profileService.selectedCrops.length}'),
+              _buildStatItem(
+                'फसलें',
+                '${_profileService.selectedCrops.length}',
+              ),
               _buildStatDivider(),
               _buildStatItem('भाषा', _profileService.language.split(' ')[0]),
             ],
@@ -452,21 +511,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
         SizedBox(height: 3.h),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 11.sp,
-            color: AppTheme.textSecondary,
-          ),
+          style: TextStyle(fontSize: 11.sp, color: AppTheme.textSecondary),
         ),
       ],
     );
   }
 
   Widget _buildStatDivider() {
-    return Container(
-      height: 28.h,
-      width: 1,
-      color: Colors.grey[300],
-    );
+    return Container(height: 28.h, width: 1, color: Colors.grey[300]);
   }
 
   Widget _buildBusinessPlanBanner() {
@@ -492,7 +544,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 color: Colors.white.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.assignment_outlined, color: Colors.white, size: 24),
+              child: const Icon(
+                Icons.assignment_outlined,
+                color: Colors.white,
+                size: 24,
+              ),
             ),
             SizedBox(width: 12.w),
             Expanded(
@@ -510,15 +566,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   SizedBox(height: 2.h),
                   Text(
                     'Phase 1 MVP • 1,000 किसान • मौसम, मंडी व खाता',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 11.sp,
-                    ),
+                    style: TextStyle(color: Colors.white70, fontSize: 11.sp),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios, color: Colors.white70, size: 14),
+            const Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.white70,
+              size: 14,
+            ),
           ],
         ),
       ),
@@ -545,7 +602,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       {
         'title': 'मौसम व स्प्रे/सिंचाई सलाह (Weather Advisory)',
         'icon': Icons.wb_sunny_outlined,
-        'action': () => Navigator.pushNamed(context, RoutesName.weatherAdvisory),
+        'action': () =>
+            Navigator.pushNamed(context, RoutesName.weatherAdvisory),
       },
       {
         'title': 'किसान दैनिक खाता (Khata with Voice)',
@@ -621,8 +679,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: GestureDetector(
-        onTap: () {
-          Navigator.pushReplacementNamed(context, RoutesName.login);
+        onTap: () async {
+          final revoked = await AuthService.instance.logout();
+          await clearSignedInAccount();
+          if (!mounted) return;
+          if (!revoked)
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Device से logout हो गया। Server session revoke करने के लिए network उपलब्ध नहीं था।',
+                ),
+              ),
+            );
+          Navigator.of(
+            context,
+            rootNavigator: true,
+          ).pushNamedAndRemoveUntil(RoutesName.login, (_) => false);
         },
         child: Container(
           width: double.infinity,

@@ -1,3 +1,7 @@
+import 'package:shop/features/daily/daily_screen.dart';
+import 'package:shop/features/daily/daily_store.dart';
+import 'package:shop/features/auth/auth_service.dart';
+import 'package:shop/features/auth/auth_flow.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shop/config/routes/routes_name.dart';
@@ -18,20 +22,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _profileService = FarmerProfileService();
   final _langService = LanguageService.instance;
 
-  bool _notifications = true;
-  bool _weatherBulletin = true;
-  bool _voiceAssistant = true;
-
   @override
   void initState() {
     super.initState();
     _profileService.addListener(_onServiceUpdate);
+    DailyStore.instance.addListener(_onServiceUpdate);
     _langService.addListener(_onServiceUpdate);
   }
 
   @override
   void dispose() {
     _profileService.removeListener(_onServiceUpdate);
+    DailyStore.instance.removeListener(_onServiceUpdate);
     _langService.removeListener(_onServiceUpdate);
     super.dispose();
   }
@@ -72,37 +74,45 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ? [
             {
               'q': 'मंडी भाव कैसे चेक करें?',
-              'a': 'होम स्क्रीन पर "मंडी भाव" विकल्प पर टैप करें। आप अपनी स्थानीय मंडी और फसल चुनकर ताज़ा भाव व आवक देख सकते हैं।',
+              'a':
+                  'होम स्क्रीन पर "मंडी भाव" विकल्प पर टैप करें। आप अपनी स्थानीय मंडी और फसल चुनकर ताज़ा भाव व आवक देख सकते हैं।',
             },
             {
               'q': 'खाते में बोलकर एंट्री कैसे करें?',
-              'a': 'होम स्क्रीन या खाता स्क्रीन में माइक बटन दबाकर बोलें, जैसे "2 बोरी डीएपी 2700 रुपये"। ऐप अपने आप खर्च या कमाई समझकर जोड़ लेगा।',
+              'a':
+                  'होम स्क्रीन या खाता स्क्रीन में माइक बटन दबाकर बोलें, जैसे "2 बोरी डीएपी 2700 रुपये"। ऐप अपने आप खर्च या कमाई समझकर जोड़ लेगा।',
             },
             {
               'q': 'स्प्रे सलाह का क्या मतलब है?',
-              'a': 'मौसम के अनुसार हवा और बारिश की जांच करके ऐप बताता है कि आज दवा का छिड़काव सुरक्षित है या नहीं।',
+              'a':
+                  'मौसम के अनुसार हवा और बारिश की जांच करके ऐप बताता है कि आज दवा का छिड़काव सुरक्षित है या नहीं।',
             },
             {
               'q': 'रेट अलर्ट कैसे लगाएं?',
-              'a': 'मंडी स्क्रीन पर जाकर अपनी मनपसंद फसल का लक्ष्य मूल्य सेट करें। भाव छूने पर आपको तुरंत नोटिफिकेशन मिलेगा।',
+              'a':
+                  'मंडी स्क्रीन पर जाकर अपनी मनपसंद फसल का लक्ष्य मूल्य सेट करें। भाव छूने पर आपको तुरंत नोटिफिकेशन मिलेगा।',
             },
           ]
         : [
             {
               'q': 'How to check Mandi Rates?',
-              'a': 'Tap on "Mandi Rates" on the Home screen to view real-time prices and arrivals for your nearest markets.',
+              'a':
+                  'Tap on "Mandi Rates" on the Home screen to view real-time prices and arrivals for your nearest markets.',
             },
             {
               'q': 'How to add voice entries in Khata?',
-              'a': 'Tap the mic icon in Khata and speak naturally, e.g., "2 bags DAP 2700 rupees". The app automatically categorizes and logs it.',
+              'a':
+                  'Tap the mic icon in Khata and speak naturally, e.g., "2 bags DAP 2700 rupees". The app automatically categorizes and logs it.',
             },
             {
               'q': 'What is Spray Advisory?',
-              'a': 'Based on wind speed and rain forecast, the app advises whether it is safe or unsafe to spray pesticides today.',
+              'a':
+                  'Based on wind speed and rain forecast, the app advises whether it is safe or unsafe to spray pesticides today.',
             },
             {
               'q': 'How to set a Rate Alert?',
-              'a': 'Go to the Mandi screen, choose your crop, and set a target price to get notified when prices match your expectation.',
+              'a':
+                  'Go to the Mandi screen, choose your crop, and set a target price to get notified when prices match your expectation.',
             },
           ];
 
@@ -145,45 +155,51 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                   SizedBox(height: 16.h),
-                  ...faqs.map((faq) => Container(
-                        margin: EdgeInsets.only(bottom: 12.h),
-                        padding: EdgeInsets.all(14.w),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF9FBF9),
-                          borderRadius: BorderRadius.circular(12.r),
-                          border: Border.all(color: Colors.grey.shade200),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                const Icon(Icons.help_outline, color: AppTheme.primaryColor, size: 18),
-                                SizedBox(width: 8.w),
-                                Expanded(
-                                  child: Text(
-                                    faq['q']!,
-                                    style: TextStyle(
-                                      fontSize: 13.sp,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppTheme.textPrimary,
-                                    ),
+                  ...faqs.map(
+                    (faq) => Container(
+                      margin: EdgeInsets.only(bottom: 12.h),
+                      padding: EdgeInsets.all(14.w),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF9FBF9),
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.help_outline,
+                                color: AppTheme.primaryColor,
+                                size: 18,
+                              ),
+                              SizedBox(width: 8.w),
+                              Expanded(
+                                child: Text(
+                                  faq['q']!,
+                                  style: TextStyle(
+                                    fontSize: 13.sp,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppTheme.textPrimary,
                                   ),
                                 ),
-                              ],
-                            ),
-                            SizedBox(height: 6.h),
-                            Text(
-                              faq['a']!,
-                              style: TextStyle(
-                                fontSize: 12.sp,
-                                color: AppTheme.textSecondary,
-                                height: 1.4,
                               ),
+                            ],
+                          ),
+                          SizedBox(height: 6.h),
+                          Text(
+                            faq['a']!,
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              color: AppTheme.textSecondary,
+                              height: 1.4,
                             ),
-                          ],
-                        ),
-                      )),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             );
@@ -197,13 +213,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-        title: Text(title, style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
-        content: Text(content, style: TextStyle(fontSize: 13.sp, color: AppTheme.textSecondary)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        title: Text(
+          title,
+          style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          content,
+          style: TextStyle(fontSize: 13.sp, color: AppTheme.textSecondary),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(AppTexts.tr('ok'), style: const TextStyle(color: AppTheme.primaryColor)),
+            child: Text(
+              AppTexts.tr('ok'),
+              style: const TextStyle(color: AppTheme.primaryColor),
+            ),
           ),
         ],
       ),
@@ -214,24 +241,53 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-        title: Text(AppTexts.tr('logout_dialog_title'), style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
-        content: Text(AppTexts.tr('logout_dialog_msg'), style: TextStyle(fontSize: 13.sp, color: AppTheme.textSecondary)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        title: Text(
+          AppTexts.tr('logout_dialog_title'),
+          style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          AppTexts.tr('logout_dialog_msg'),
+          style: TextStyle(fontSize: 13.sp, color: AppTheme.textSecondary),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(AppTexts.tr('cancel'), style: TextStyle(color: Colors.grey[600])),
+            child: Text(
+              AppTexts.tr('cancel'),
+              style: TextStyle(color: Colors.grey[600]),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.error,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.r),
+              ),
             ),
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pushNamedAndRemoveUntil(context, RoutesName.login, (route) => false);
+            onPressed: () async {
+              final revoked = await AuthService.instance.logout();
+              await clearSignedInAccount();
+              if (!revoked && mounted)
+                ScaffoldMessenger.of(this.context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Device से logout हो गया। Network के कारण server session revoke नहीं हुआ; वह expiry पर समाप्त होगा।',
+                    ),
+                  ),
+                );
+              if (!context.mounted) return;
+              Navigator.of(
+                context,
+                rootNavigator: true,
+              ).pushNamedAndRemoveUntil(RoutesName.login, (route) => false);
             },
-            child: Text(AppTexts.tr('logout_btn'), style: const TextStyle(color: Colors.white)),
+            child: Text(
+              AppTexts.tr('logout_btn'),
+              style: const TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -304,9 +360,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     children: [
                       CircleAvatar(
                         radius: 26.r,
-                        backgroundColor: AppTheme.primaryColor.withOpacity(0.12),
+                        backgroundColor: AppTheme.primaryColor.withOpacity(
+                          0.12,
+                        ),
                         child: Text(
-                          _profileService.name.isNotEmpty ? _profileService.name[0] : 'K',
+                          _profileService.name.isNotEmpty
+                              ? _profileService.name[0]
+                              : 'K',
                           style: TextStyle(
                             fontSize: 22.sp,
                             fontWeight: FontWeight.bold,
@@ -352,14 +412,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const Divider(height: 1),
                   SizedBox(height: 10.h),
                   InkWell(
-                    onTap: () => Navigator.pushNamed(context, RoutesName.profileSetup),
+                    onTap: () =>
+                        Navigator.pushNamed(context, RoutesName.profileSetup),
                     borderRadius: BorderRadius.circular(8.r),
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 4.h),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.edit_note, color: AppTheme.primaryColor, size: 18),
+                          const Icon(
+                            Icons.edit_note,
+                            color: AppTheme.primaryColor,
+                            size: 18,
+                          ),
                           SizedBox(width: 6.w),
                           Text(
                             AppTexts.tr('edit_profile_btn'),
@@ -391,49 +456,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
               padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
               child: Column(
                 children: [
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    activeColor: AppTheme.primaryColor,
-                    title: Text(
-                      AppTexts.tr('pref_notifications'),
-                      style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
-                    ),
+                  ListTile(
+                    leading: const Icon(Icons.notifications_active_outlined),
+                    title: const Text('दैनिक और खेती के रिमाइंडर'),
                     subtitle: Text(
-                      AppTexts.tr('pref_notifications_sub'),
-                      style: TextStyle(fontSize: 11.sp, color: AppTheme.textSecondary),
+                      DailyStore.instance.morning
+                          ? 'सुबह का रिमाइंडर चालू है'
+                          : 'कैलेंडर में reminders सेट करें',
                     ),
-                    value: _notifications,
-                    onChanged: (val) => setState(() => _notifications = val),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const DailyScreen()),
+                    ),
                   ),
                   const Divider(height: 1),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    activeColor: AppTheme.primaryColor,
-                    title: Text(
-                      AppTexts.tr('pref_weather_alerts'),
-                      style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
+                  ListTile(
+                    leading: const Icon(Icons.mic_outlined),
+                    title: const Text('बोलकर खाता लिखें'),
+                    subtitle: const Text(
+                      'Microphone अनुमति उपयोग के समय मांगी जाएगी',
                     ),
-                    subtitle: Text(
-                      AppTexts.tr('pref_weather_alerts_sub'),
-                      style: TextStyle(fontSize: 11.sp, color: AppTheme.textSecondary),
-                    ),
-                    value: _weatherBulletin,
-                    onChanged: (val) => setState(() => _weatherBulletin = val),
-                  ),
-                  const Divider(height: 1),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    activeColor: AppTheme.primaryColor,
-                    title: Text(
-                      AppTexts.tr('pref_voice_assistant'),
-                      style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
-                    ),
-                    subtitle: Text(
-                      AppTexts.tr('pref_voice_assistant_sub'),
-                      style: TextStyle(fontSize: 11.sp, color: AppTheme.textSecondary),
-                    ),
-                    value: _voiceAssistant,
-                    onChanged: (val) => setState(() => _voiceAssistant = val),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => Navigator.pushNamed(context, RoutesName.khata),
                   ),
                 ],
               ),
@@ -460,25 +505,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         color: Colors.green.shade50,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.call, color: AppTheme.primaryColor, size: 20),
+                      child: const Icon(
+                        Icons.call,
+                        color: AppTheme.primaryColor,
+                        size: 20,
+                      ),
                     ),
                     title: Text(
                       AppTexts.tr('kisan_helpline'),
-                      style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     subtitle: Text(
                       'टोल-फ्री: 1800-180-1551 (सुबह 6 AM - रात 10 PM)',
-                      style: TextStyle(fontSize: 11.sp, color: AppTheme.textSecondary),
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: AppTheme.textSecondary,
+                      ),
                     ),
                     trailing: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 10.w,
+                        vertical: 4.h,
+                      ),
                       decoration: BoxDecoration(
                         color: AppTheme.primaryColor,
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                       child: Text(
                         AppTexts.tr('call'),
-                        style: TextStyle(color: Colors.white, fontSize: 11.sp, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     onTap: () {
@@ -496,17 +558,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         color: Colors.teal.shade50,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.chat, color: Colors.teal, size: 20),
+                      child: const Icon(
+                        Icons.chat,
+                        color: Colors.teal,
+                        size: 20,
+                      ),
                     ),
                     title: Text(
                       AppTexts.tr('whatsapp_help'),
-                      style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     subtitle: Text(
                       AppTexts.tr('whatsapp_help_desc'),
-                      style: TextStyle(fontSize: 11.sp, color: AppTheme.textSecondary),
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: AppTheme.textSecondary,
+                      ),
                     ),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: AppTheme.textHint),
+                    trailing: const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 14,
+                      color: AppTheme.textHint,
+                    ),
                     onTap: () {
                       _showInfoDialog(
                         AppTexts.tr('whatsapp_help'),
@@ -522,17 +598,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         color: Colors.amber.shade50,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.quiz_outlined, color: Colors.amber, size: 20),
+                      child: const Icon(
+                        Icons.quiz_outlined,
+                        color: Colors.amber,
+                        size: 20,
+                      ),
                     ),
                     title: Text(
                       AppTexts.tr('faq_title'),
-                      style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     subtitle: Text(
                       AppTexts.tr('faq_desc'),
-                      style: TextStyle(fontSize: 11.sp, color: AppTheme.textSecondary),
+                      style: TextStyle(
+                        fontSize: 11.sp,
+                        color: AppTheme.textSecondary,
+                      ),
                     ),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: AppTheme.textHint),
+                    trailing: const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 14,
+                      color: AppTheme.textHint,
+                    ),
                     onTap: _showFaqModal,
                   ),
                 ],
@@ -556,9 +646,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ListTile(
                     title: Text(
                       AppTexts.tr('privacy_policy'),
-                      style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: AppTheme.textHint),
+                    trailing: const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 14,
+                      color: AppTheme.textHint,
+                    ),
                     onTap: () {
                       _showInfoDialog(
                         AppTexts.tr('privacy_policy'),
@@ -570,9 +667,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ListTile(
                     title: Text(
                       AppTexts.tr('terms_of_service'),
-                      style: TextStyle(fontSize: 13.sp, fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: AppTheme.textHint),
+                    trailing: const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 14,
+                      color: AppTheme.textHint,
+                    ),
                     onTap: () {
                       _showInfoDialog(
                         AppTexts.tr('terms_of_service'),
@@ -588,11 +692,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       children: [
                         Text(
                           AppTexts.tr('app_name'),
-                          style: TextStyle(fontSize: 12.sp, color: AppTheme.textSecondary, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: AppTheme.textSecondary,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         Text(
                           AppTexts.tr('app_version'),
-                          style: TextStyle(fontSize: 12.sp, color: AppTheme.textHint),
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: AppTheme.textHint,
+                          ),
                         ),
                       ],
                     ),
@@ -719,14 +830,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     title,
                     style: TextStyle(
                       fontSize: 14.sp,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                      color: isSelected ? AppTheme.primaryColor : AppTheme.textPrimary,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.w600,
+                      color: isSelected
+                          ? AppTheme.primaryColor
+                          : AppTheme.textPrimary,
                     ),
                   ),
                   SizedBox(height: 2.h),
                   Text(
                     subtitle,
-                    style: TextStyle(fontSize: 11.sp, color: AppTheme.textSecondary),
+                    style: TextStyle(
+                      fontSize: 11.sp,
+                      color: AppTheme.textSecondary,
+                    ),
                   ),
                 ],
               ),
@@ -738,7 +856,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 shape: BoxShape.circle,
                 color: isSelected ? AppTheme.primaryColor : Colors.transparent,
                 border: Border.all(
-                  color: isSelected ? AppTheme.primaryColor : Colors.grey.shade400,
+                  color: isSelected
+                      ? AppTheme.primaryColor
+                      : Colors.grey.shade400,
                   width: 2,
                 ),
               ),

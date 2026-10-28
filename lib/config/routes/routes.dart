@@ -14,8 +14,6 @@ import 'package:shop/bloc/professional_profile_bloc/professional_profile_bloc.da
 import 'package:shop/view/authorised/booking/booking_appointment_screen.dart';
 import 'package:shop/bloc/booking_bloc/booking_bloc.dart';
 import 'package:shop/model/professional/professional_model.dart';
-import 'package:shop/bloc/login_bloc/login_bloc.dart';
-import 'package:shop/dependency_injection/locator.dart';
 import 'package:shop/view/product_details/product_details.dart';
 import 'package:shop/view/desktop/layout/responsive_wrapper.dart';
 import 'package:shop/view/authorised/store/store.dart';
@@ -56,13 +54,7 @@ class Routes {
         );
 
       case RoutesName.login:
-        return MaterialPageRoute(
-          builder: (BuildContext context) => BlocProvider(
-            create: (context) =>
-                LoginBloc(authRepository: getIt<AuthRepository>()),
-            child: LoginScreen(),
-          ),
-        );
+        return MaterialPageRoute(builder: (_) => const LoginScreen());
 
       case RoutesName.professionalList:
         final args = settings.arguments as String?;

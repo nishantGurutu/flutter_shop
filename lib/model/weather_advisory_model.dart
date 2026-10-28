@@ -82,6 +82,69 @@ class WeatherAdvisoryModel {
   final List<DailyForecast> dailyForecasts;
   final List<CropSprayTip> cropSprayTips;
 
+  factory WeatherAdvisoryModel.fromJson(Map<String, dynamic> j) {
+    SpraySuitability suitability(dynamic value) =>
+        SpraySuitability.values.byName(value as String);
+    int number(String key) => (j[key] as num).round();
+    return WeatherAdvisoryModel(
+      location: j['location'],
+      temperature: number('temperature'),
+      feelsLike: number('feelsLike'),
+      condition: j['condition'],
+      highTemp: number('highTemp'),
+      lowTemp: number('lowTemp'),
+      humidity: number('humidity'),
+      windSpeed: number('windSpeed'),
+      rainProbability: number('rainProbability'),
+      todaySpraySuitability: suitability(j['todaySpraySuitability']),
+      sprayAdviceTitle: j['sprayAdviceTitle'],
+      sprayAdviceDescription: j['sprayAdviceDescription'],
+      bestSprayWindow: j['bestSprayWindow'],
+      irrigationAdviceTitle: j['irrigationAdviceTitle'],
+      irrigationAdviceDescription: j['irrigationAdviceDescription'],
+      hourlyForecasts: (j['hourlyForecasts'] as List? ?? [])
+          .map(
+            (e) => HourlyForecast(
+              time: e['time'],
+              temp: (e['temp'] as num).round(),
+              rainChance: (e['rainChance'] as num).round(),
+              humidity: (e['humidity'] as num).round(),
+              windSpeed: (e['windSpeed'] as num).round(),
+              condition: e['condition'],
+              spraySuitability: suitability(e['spraySuitability']),
+              sprayNote: e['sprayNote'],
+            ),
+          )
+          .toList(),
+      dailyForecasts: (j['dailyForecasts'] as List? ?? [])
+          .map(
+            (e) => DailyForecast(
+              day: e['day'],
+              date: e['date'],
+              highTemp: (e['highTemp'] as num).round(),
+              lowTemp: (e['lowTemp'] as num).round(),
+              rainChance: (e['rainChance'] as num).round(),
+              condition: e['condition'],
+              spraySuitability: suitability(e['spraySuitability']),
+              irrigationAdvice: e['irrigationAdvice'],
+            ),
+          )
+          .toList(),
+      cropSprayTips: (j['cropSprayTips'] as List? ?? [])
+          .map(
+            (e) => CropSprayTip(
+              cropName: e['cropName'],
+              cropHindi: e['cropHindi'],
+              pestOrDisease: e['pestOrDisease'],
+              recommendation: e['recommendation'],
+              medicine: e['medicine'],
+              dosage: e['dosage'],
+            ),
+          )
+          .toList(),
+    );
+  }
+
   const WeatherAdvisoryModel({
     required this.location,
     required this.temperature,

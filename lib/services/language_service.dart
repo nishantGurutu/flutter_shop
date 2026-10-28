@@ -57,8 +57,10 @@ class LanguageService extends ChangeNotifier {
 
   void _syncWithProfileService() {
     try {
-      final profileLangText = _currentLanguage == 'hi' ? 'हिंदी (Hindi)' : 'English';
-      FarmerProfileService().updateProfile(language: profileLangText);
+      final profileLangText = _currentLanguage == 'hi'
+          ? 'हिंदी (Hindi)'
+          : 'English';
+      FarmerProfileService().updateLanguage(profileLangText);
     } catch (_) {}
   }
 }
